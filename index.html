@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCQ Prompt Builder — เลือกเครื่องมือ</title>
+<meta name="description" content="เครื่องมือประกอบ prompt ออกข้อสอบปรนัย MCQ สำหรับการสอบใบประกอบวิชาชีพเวชกรรม เลือกได้ระหว่างตัวสร้างรายข้อเชิงลึกและตัวสร้างเป็นชุดตามผังข้อสอบ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#eaf0ee; --surface:#ffffff; --surface-2:#f4f8f6;
+  --ink:#12211f; --ink-soft:#41524f; --muted:#6c7d79;
+  --border:#dae3e0; --border-strong:#c1cecb;
+  --accent:#0e7c6b; --accent-ink:#0a5347; --accent-soft:#d8ece7;
+  --good:#1f8a5b; --good-soft:#dcefe5;
+  --warn:#a86a12; --warn-soft:#f6ebd6;
+  --shadow:0 1px 2px rgba(18,33,31,.06),0 4px 16px rgba(18,33,31,.05);
+  --shadow-lift:0 2px 6px rgba(18,33,31,.08),0 14px 34px rgba(18,33,31,.10);
+  --radius:14px; --radius-sm:9px;
+  --font:"IBM Plex Sans Thai","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+  --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+  --border:#243230; --border-strong:#33443f;
+  --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+  --good:#3fbb82; --good-soft:#122b22;
+  --warn:#d09a3c; --warn-soft:#2c2415;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+  --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 18px 40px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+  --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+  --border:#243230; --border-strong:#33443f;
+  --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+  --good:#3fbb82; --good-soft:#122b22;
+  --warn:#d09a3c; --warn-soft:#2c2415;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+  --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 18px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.top{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.top-inner{max-width:1140px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;gap:12px}
+.mark{width:32px;height:32px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:600;font-size:16px;flex:0 0 auto}
+.brand-txt h1{font-size:15px;font-weight:600;margin:0;line-height:1.3}
+.brand-txt p{font-size:11.5px;color:var(--muted);margin:1px 0 0}
+.top button{margin-left:auto;font-family:var(--font);font-size:12px;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:999px;padding:5px 13px;cursor:pointer}
+.top button:hover{color:var(--ink);border-color:var(--border-strong)}
+
+.wrap{max-width:1140px;margin:0 auto;padding:34px 22px 70px}
+
+.lede{max-width:660px;margin:0 0 30px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 9px}
+.lede h2{font-size:27px;font-weight:600;line-height:1.28;margin:0 0 10px;letter-spacing:-.015em}
+.lede p{color:var(--ink-soft);margin:0;font-size:14.5px}
+
+/* ---- badge cards ---- */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:34px}
+@media(max-width:860px){.cards{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .18s,transform .18s,border-color .18s}
+.card:hover{box-shadow:var(--shadow-lift);transform:translateY(-2px);border-color:var(--border-strong)}
+.card-top{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:#fff;background:var(--accent);padding:4px 11px;border-radius:999px;margin-bottom:11px}
+.badge .num{background:rgba(255,255,255,.24);border-radius:999px;width:15px;height:15px;display:grid;place-items:center;font-size:10px;letter-spacing:0}
+.card h3{font-size:19px;font-weight:600;margin:0 0 5px;letter-spacing:-.01em}
+.card .tagline{font-size:13px;color:var(--muted);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:13px}
+.chip{font-size:11px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:2px 9px}
+
+.card-body{padding:16px 20px 18px;flex:1}
+.plist{margin:0 0 15px;padding:0;list-style:none}
+.plist:last-child{margin-bottom:0}
+.plist-h{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 7px}
+.plist-h.pro{color:var(--good)}
+.plist-h.con{color:var(--warn)}
+.plist li{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;padding:2.5px 0;color:var(--ink-soft)}
+.tick{flex:0 0 auto;width:14px;height:14px;border-radius:4px;margin-top:3px;display:grid;place-items:center;font-size:9px;font-weight:700;line-height:1}
+.tick.pro{background:var(--good-soft);color:var(--good)}
+.tick.con{background:var(--warn-soft);color:var(--warn)}
+
+.card-foot{padding:0 20px 20px}
+.go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;text-decoration:none;background:var(--accent);color:#fff;font-weight:500;font-size:14px;padding:11px;border-radius:999px;transition:background .15s}
+.go:hover{background:var(--accent-ink)}
+:root[data-theme="dark"] .go:hover,@media(prefers-color-scheme:dark){}
+
+/* ---- decision block ---- */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.panel-h{padding:13px 20px;border-bottom:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;gap:9px}
+.panel-h h3{font-size:14px;font-weight:600;margin:0}
+.panel-h span{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-left:auto}
+.panel-b{padding:6px 20px 16px}
+.dec{display:flex;gap:14px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}
+.dec:last-child{border-bottom:none}
+.dec-q{flex:1 1 auto;font-size:13.5px;color:var(--ink-soft)}
+.dec-a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;padding:3px 11px;border-radius:999px;white-space:nowrap;align-self:center}
+.dec-a.b1{background:var(--accent-soft);color:var(--accent-ink)}
+.dec-a.b2{background:var(--good-soft);color:var(--good)}
+.dec-a.both{background:var(--warn-soft);color:var(--warn)}
+
+.flowbox{background:var(--accent-soft);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 20px;font-size:13.5px;color:var(--ink);line-height:1.66}
+.flowbox strong{font-weight:600}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:11px;font-family:var(--mono);font-size:11.5px}
+.flow span{background:var(--surface);border:1px solid var(--border-strong);border-radius:999px;padding:4px 12px}
+.flow i{color:var(--muted);font-style:normal}
+
+footer{border-top:1px solid var(--border);margin-top:34px;padding-top:18px;font-size:11.5px;color:var(--muted);line-height:1.65}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="top">
+  <div class="top-inner">
+    <div class="mark">ข</div>
+    <div class="brand-txt">
+      <h1>MCQ Prompt Builder</h1>
+      <p>เครื่องมือประกอบ prompt ออกข้อสอบปรนัย · MCQ National / ศรว.</p>
+    </div>
+    <button id="theme">โหมดสี</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="lede">
+    <p class="eyebrow">เลือกเครื่องมือ</p>
+    <h2>มีเครื่องมือสองตัว ออกแบบมาคนละงาน</h2>
+    <p>ทั้งสองตัวสร้าง prompt ให้ AI ออกข้อสอบ MCQ แบบ one best answer ตามมาตรฐานเดียวกัน ต่างกันที่ตัวหนึ่งเจาะลึกทีละข้อ อีกตัวผลิตเป็นชุดตามผังข้อสอบ อ่านจุดเด่นจุดอ่อนแล้วเลือกให้ตรงกับงานที่กำลังทำ</p>
+  </div>
+
+  <div class="cards">
+
+    <!-- ===== BUILDER 1 ===== -->
+    <article class="card">
+      <div class="card-top">
+        <div class="badge"><span class="num">1</span> Builder 1</div>
+        <h3>รายข้อเชิงลึก</h3>
+        <p class="tagline">ตั้งค่าละเอียดทีละข้อ ผูกกับผัง ศรว. และคำนวณค่าความยากให้</p>
+        <div class="chips">
+          <span class="chip">NL2 250 ข้อ</span>
+          <span class="chip">Blueprint I–IV สพพ.</span>
+          <span class="chip">Acceptable Index / MPL</span>
+          <span class="chip">ปรับปรุงข้อสอบเดิม</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="plist">
+          <li class="plist-h pro">จุดเด่น</li>
+          <li><span class="tick pro">✓</span>ผูกกับโครงสร้างข้อสอบจริง คือ NL2 250 ข้อ ตามประกาศแพทยสภา 4/2567 และหมวดข้อสอบ I–IV ของ สพพ. ลงลึกได้ถึงหัวข้อย่อยอย่าง Pathophysiology หรือ Complication</li>
+          <li><span class="tick pro">✓</span>มีโหมดปรับปรุงข้อสอบเดิม ไม่ใช่แค่สร้างใหม่ เอาข้อในคลังมาวางแล้วให้ AI ขัดเงาได้</li>
+          <li><span class="tick pro">✓</span>คุมโครงสร้างข้อได้ละเอียด ทั้ง 4 หรือ 5 ตัวเลือก ป้าย A–E หรือ 1–5 ความยาว stem และความยาวตัวเลือก</li>
+          <li><span class="tick pro">✓</span>สั่งให้ AI ให้คะแนนตัวลวงและคำนวณ Acceptable Index เทียบกับ MPL ตามคู่มือออกข้อสอบ</li>
+          <li><span class="tick pro">✓</span>ระบุ AI แพ็กเกจ และรุ่นที่ใช้ลงใน prompt พร้อมโหมด Lite สำหรับคนที่ไม่อยากตั้งค่าเยอะ</li>
+          <li><span class="tick pro">✓</span>บูรณาการข้ามสาขา preclinical–clinical และสลับภาษา prompt ไทย/อังกฤษได้</li>
+        </ul>
+        <ul class="plist">
+          <li class="plist-h con">จุดอ่อน</li>
+          <li><span class="tick con">!</span>ตั้งค่าเยอะ ใช้เวลาต่อหนึ่งครั้ง ไม่เหมาะกับการผลิตข้อสอบจำนวนมากติดกัน</li>
+          <li><span class="tick con">!</span>ไม่ได้ออกแบบให้กระจายผังข้ามหลายสาขาและหลายระบบในคำสั่งเดียว</li>
+          <li><span class="tick con">!</span>prompt มีรูปแบบเดียว ระบุชื่อรุ่น AI ลงไปเฉย ๆ ไม่ได้ปรับรูปคำสั่งตามลักษณะของ AI แต่ละตัว</li>
+          <li><span class="tick con">!</span>ผลลัพธ์เป็นข้อความสำหรับอ่าน ไม่มีรูปแบบ JSON หรือ CSV สำหรับนำเข้าระบบสอบ</li>
+          <li><span class="tick con">!</span>ไม่มีเพดานระดับความสามารถตามเกณฑ์แพทยสภาแบบบังคับ และบันทึกค่าที่ตั้งไว้ส่งต่อไม่ได้</li>
+        </ul>
+      </div>
+      <div class="card-foot"><a class="go" href="./builder1.html">เปิด Builder 1 →</a></div>
+    </article>
+
+    <!-- ===== BUILDER 2 ===== -->
+    <article class="card">
+      <div class="card-top">
+        <div class="badge"><span class="num">2</span> Builder 2</div>
+        <h3>ชุดตามผัง</h3>
+        <p class="tagline">ผลิตเป็นชุด กระจายข้ามสาขา และส่งออกเข้าระบบสอบได้เลย</p>
+        <div class="chips">
+          <span class="chip">เพดานเกณฑ์แพทยสภา</span>
+          <span class="chip">ปรับคำสั่งตาม AI แต่ละตัว</span>
+          <span class="chip">JSON / CSV / GIFT</span>
+          <span class="chip">บันทึกผังส่งต่อได้</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="plist">
+          <li class="plist-h pro">จุดเด่น</li>
+          <li><span class="tick pro">✓</span>ออกแบบมาเพื่อผลิตเป็นชุด เลือกหลายสาขา หลายระบบ หลายภารกิจแพทย์พร้อมกัน แล้วสั่งให้ AI กระจายข้อให้สมดุล</li>
+          <li><span class="tick pro">✓</span>มีเพดานระดับความสามารถตามเกณฑ์แพทยสภา พร้อมข้อความบอกขอบเขตที่อนุญาต และบังคับให้ AI ระบุระดับกำกับทุกข้อ ตรวจย้อนได้ทีละข้อ</li>
+          <li><span class="tick pro">✓</span>ปรับรูปคำสั่งตาม AI ที่เลือก Claude ได้ XML tags, ChatGPT ได้ลำดับขั้นการทำงาน, Gemini ได้การย้ำขอบเขตท้ายคำสั่ง, Perplexity ถูกสั่งให้ค้นแนวเวชปฏิบัติแล้วแนบลิงก์อ้างอิง</li>
+          <li><span class="tick pro">✓</span>เลือกรูปแบบผลลัพธ์เป็น JSON, CSV สำหรับ ClassMarker หรือ Moodle GIFT นำเข้าระบบสอบได้โดยไม่ต้องแปลงมือ</li>
+          <li><span class="tick pro">✓</span>บันทึกผังที่ตั้งไว้เป็นไฟล์ JSON ส่งให้กรรมการคนอื่นโหลดใช้ผังเดียวกัน</li>
+          <li><span class="tick pro">✓</span>ฝัง self-check list ให้ AI ตรวจงานตัวเองก่อนส่งผล และล็อกข้อกำหนดหลัก 4 ข้อไว้แก้ไม่ได้ ทุกคนจึงได้มาตรฐานเดียวกัน</li>
+        </ul>
+        <ul class="plist">
+          <li class="plist-h con">จุดอ่อน</li>
+          <li><span class="tick con">!</span>ยังไม่ได้ผูกกับโครงสร้าง NL2 250 ข้อ และหมวด I–IV ของ สพพ. ใช้ผังทั่วไปตามสาขาและระบบร่างกายแทน</li>
+          <li><span class="tick con">!</span>ไม่มีการให้คะแนนตัวลวงและคำนวณ Acceptable Index หรือ MPL</li>
+          <li><span class="tick con">!</span>ไม่มีโหมดปรับปรุงข้อสอบเดิม ทำได้เฉพาะสร้างใหม่</li>
+          <li><span class="tick con">!</span>ล็อกไว้ที่ 5 ตัวเลือกเสมอ ปรับเป็น 4 ตัวเลือกไม่ได้ และไม่ได้คุมความยาว stem หรือความยาวตัวเลือก</li>
+          <li><span class="tick con">!</span>ไม่ได้ระบุแพ็กเกจและรุ่นของ AI ลงใน prompt</li>
+        </ul>
+      </div>
+      <div class="card-foot"><a class="go" href="./builder2.html">เปิด Builder 2 →</a></div>
+    </article>
+  </div>
+
+  <!-- ===== decision helper ===== -->
+  <div class="panel">
+    <div class="panel-h"><h3>ถ้ายังลังเล ให้ดูจากงานที่กำลังทำ</h3><span>เลือกตามสถานการณ์</span></div>
+    <div class="panel-b">
+      <div class="dec"><p class="dec-q">ต้องออกข้อสอบส่งเข้าคลังทีละข้อ และต้องรายงานค่าความยากกำกับ</p><span class="dec-a b1">Builder 1</span></div>
+      <div class="dec"><p class="dec-q">มีข้อสอบเดิมอยู่แล้ว อยากให้ AI ช่วยขัดเงาโจทย์และตัวลวง</p><span class="dec-a b1">Builder 1</span></div>
+      <div class="dec"><p class="dec-q">ต้องเจาะหมวด blueprint ของ สพพ. ให้ตรงหัวข้อย่อย เช่น Pathogenesis หรือ Severity of illness</p><span class="dec-a b1">Builder 1</span></div>
+      <div class="dec"><p class="dec-q">ต้องผลิตข้อสอบทั้งชุดให้ครอบคลุมหลายสาขาและหลายระบบในคราวเดียว</p><span class="dec-a b2">Builder 2</span></div>
+      <div class="dec"><p class="dec-q">ต้องนำข้อสอบเข้า ClassMarker, Moodle หรือคลังข้อสอบที่รับ JSON</p><span class="dec-a b2">Builder 2</span></div>
+      <div class="dec"><p class="dec-q">กังวลว่าข้อสอบจะเกินเกณฑ์มาตรฐานของแพทยสภา และอยากให้มีระดับกำกับทุกข้อ</p><span class="dec-a b2">Builder 2</span></div>
+      <div class="dec"><p class="dec-q">อยากให้กรรมการหลายคนออกข้อสอบโดยใช้ผังและมาตรฐานเดียวกัน</p><span class="dec-a b2">Builder 2</span></div>
+      <div class="dec"><p class="dec-q">จะใช้ Perplexity เพื่อยืนยันคำตอบกับแนวเวชปฏิบัติพร้อมลิงก์อ้างอิง</p><span class="dec-a b2">Builder 2</span></div>
+      <div class="dec"><p class="dec-q">เป็นงานออกข้อสอบทั้งชุดของศูนย์แพทย์ ที่ต้องได้ทั้งความครอบคลุมและคุณภาพรายข้อ</p><span class="dec-a both">ใช้ทั้งคู่</span></div>
+    </div>
+  </div>
+
+  <div class="flowbox">
+    <strong>ใช้ทั้งสองตัวร่วมกันได้ผลดีที่สุด</strong> — ร่างชุดข้อสอบให้ครอบคลุมผังด้วย Builder 2 ก่อน แล้วคัดเฉพาะข้อที่จะใช้จริงมาเข้า Builder 1 ในโหมดปรับปรุงข้อสอบเดิม เพื่อขัดเงาตัวลวงและคำนวณค่าความยากกำกับก่อนส่งเข้าคลัง
+    <div class="flow">
+      <span>Builder 2 · ร่างทั้งชุด</span><i>→</i>
+      <span>คัดข้อที่ใช้จริง</span><i>→</i>
+      <span>Builder 1 · โหมดปรับปรุง</span><i>→</i>
+      <span>กรรมการทบทวน</span><i>→</i>
+      <span>คลังข้อสอบ</span>
+    </div>
+  </div>
+
+  <footer>
+    prompt ที่ทั้งสองเครื่องมือสร้างขึ้นเป็นเพียงคำสั่งตั้งต้น ข้อสอบที่ AI สร้างต้องผ่านการทบทวนโดยผู้เชี่ยวชาญสาขา ตรวจความถูกต้องทางคลินิก ตรวจเทียบเกณฑ์มาตรฐานผู้ประกอบวิชาชีพเวชกรรมฉบับจริง และผ่าน item analysis หลังสอบก่อนนำเข้าคลังข้อสอบ
+  </footer>
+</div>
+
+<script>
+document.getElementById('theme').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light'
+    : (cur === 'light' ? 'dark'
+    : (matchMedia('(prefers-color-scheme:dark)').matches ? 'light' : 'dark'));
+  document.documentElement.setAttribute('data-theme', next);
+};
+</script>
+</html>

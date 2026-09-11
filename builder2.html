@@ -1,0 +1,657 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Builder 2 · ชุดตามผัง — MCQ Prompt Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ground:#eaf0ee; --surface:#ffffff; --surface-2:#f4f8f6;
+  --ink:#12211f; --ink-soft:#41524f; --muted:#6c7d79;
+  --border:#dae3e0; --border-strong:#c1cecb;
+  --accent:#0e7c6b; --accent-ink:#0a5347; --accent-soft:#d8ece7;
+  --crit:#bd4230; --crit-soft:#f6ddd8;
+  --preview-bg:#101d1b; --preview-panel:#172826; --preview-ink:#dfeae7;
+  --preview-muted:#7f938f; --preview-accent:#4ec4ac; --preview-border:#243936;
+  --shadow:0 1px 2px rgba(18,33,31,.06),0 4px 16px rgba(18,33,31,.05);
+  --radius:12px; --radius-sm:8px;
+  --font:"IBM Plex Sans Thai","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+  --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+  --border:#243230; --border-strong:#33443f;
+  --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+  --crit:#e0705c; --crit-soft:#2e1a16;
+  --preview-bg:#080f0e; --preview-panel:#101a18; --preview-ink:#dceae6;
+  --preview-muted:#71847f; --preview-border:#1d2b28;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+}}
+:root[data-theme="dark"]{
+  --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+  --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+  --border:#243230; --border-strong:#33443f;
+  --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+  --crit:#e0705c; --crit-soft:#2e1a16;
+  --preview-bg:#080f0e; --preview-panel:#101a18; --preview-ink:#dceae6;
+  --preview-muted:#71847f; --preview-border:#1d2b28;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2{font-family:var(--font);letter-spacing:-.01em}
+code,pre,.mono{font-family:var(--mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- header ---------- */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 20px 16px}
+.hwrap{max-width:1320px;margin:0 auto;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 5px}
+h1{font-size:22px;font-weight:600;margin:0;line-height:1.25}
+h1 .sub{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:4px}
+.locked{border:1px solid var(--border-strong);background:var(--accent-soft);border-radius:var(--radius);padding:11px 13px;max-width:560px;flex:1 1 360px}
+.locked-h{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:7px}
+.locked ol{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.locked li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--ink)}
+.bub{flex:0 0 auto;width:13px;height:13px;border-radius:50%;margin-top:3px;background:var(--accent);box-shadow:inset 0 0 0 2px var(--surface),0 0 0 1.5px var(--accent)}
+
+/* ---------- layout ---------- */
+main{max-width:1320px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;align-items:start}
+.col-form{min-width:0}
+.col-out{min-width:0;position:sticky;top:14px}
+@media(max-width:1020px){main{grid-template-columns:1fr}.col-out{position:static}}
+
+/* ---------- cards ---------- */
+section.blk{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin:0 0 14px;overflow:hidden}
+.blk-h{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2);flex-wrap:wrap}
+.blk-n{font-family:var(--mono);font-size:10.5px;color:#fff;background:var(--accent);width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.blk-h h2{font-size:13.5px;font-weight:600;margin:0}
+.blk-h .hint{font-size:11px;color:var(--muted);margin-left:auto;font-family:var(--mono)}
+section.blk > *:not(.blk-h){margin-left:14px;margin-right:14px}
+section.blk > *:not(.blk-h):first-of-type{margin-top:13px}
+section.blk > *:last-child{margin-bottom:14px}
+.bulk{display:inline-flex;gap:5px;font-family:var(--mono);font-size:10.5px}
+.bulk button{padding:1px 8px;font-family:inherit;font-size:10.5px;font-weight:400;border:1px solid var(--border-strong);border-radius:999px;color:var(--muted);background:var(--surface)}
+.bulk button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.grid{display:grid;gap:6px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+
+/* bubble option */
+.opt{display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-size:13px;line-height:1.4;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--border-strong)}
+.opt input{position:absolute;opacity:0;width:0;height:0}
+.dot{flex:0 0 auto;width:14px;height:14px;border-radius:50%;margin-top:2px;border:1.5px solid var(--border-strong);background:transparent;transition:all .12s}
+.opt input:checked ~ .dot{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 2.5px var(--surface)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input:focus-visible ~ .dot{outline:2px solid var(--accent);outline-offset:2px}
+
+label.fld{display:block;font-size:11px;color:var(--muted);margin:0 0 4px;font-family:var(--mono);letter-spacing:.04em}
+input[type=text],input[type=number],textarea,select{width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px}
+textarea{min-height:70px;resize:vertical;line-height:1.55}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.row{display:flex;gap:11px;flex-wrap:wrap}
+.row > div{flex:1 1 150px;min-width:0}
+
+/* ---------- output ---------- */
+.tabs{display:flex;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:var(--surface)}
+.tab{flex:1;text-align:center;padding:9px 5px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;border-right:1px solid var(--border)}
+.tab:last-child{border-right:none}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--accent);color:#fff}
+.tab .dot2{width:9px;height:9px;border-radius:50%;border:1.5px solid currentColor;opacity:.6}
+.tab.on .dot2{background:#fff;opacity:1}
+.tab-note{font-size:11.5px;color:var(--muted);padding:9px 12px;line-height:1.5;background:var(--surface);border-left:1px solid var(--border);border-right:1px solid var(--border);margin:0}
+
+pre.out{background:var(--preview-bg);color:var(--preview-ink);border:1px solid var(--preview-border);margin:0;padding:15px;font-size:11.5px;line-height:1.66;white-space:pre-wrap;word-break:break-word;max-height:54vh;overflow:auto}
+.meter{display:flex;gap:14px;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:7px 12px;background:var(--surface)}
+.meter b{color:var(--ink);font-weight:500}
+
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+button{font-family:var(--font);font-size:12.5px;font-weight:500;padding:8px 14px;border:1px solid var(--border-strong);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.primary:hover{background:var(--accent-ink);border-color:var(--accent-ink);color:#fff}
+button.ghost{color:var(--muted);border-color:var(--border)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);background:var(--ink);color:var(--ground);padding:9px 18px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:all .2s;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.warn{border-left:3px solid var(--crit);background:var(--crit-soft);padding:9px 12px;border-radius:var(--radius-sm);font-size:12px;color:var(--ink);line-height:1.5;margin-top:11px}
+footer{border-top:1px solid var(--border);padding:16px 20px 36px;font-size:11.5px;color:var(--muted);max-width:1320px;margin:0 auto;line-height:1.6}
+footer code{background:var(--surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== แถบสลับเครื่องมือ (ใช้ร่วมกันทั้งสอง builder) ===== */
+.xnav{background:var(--surface-2,#f4f8f6);border-bottom:1px solid var(--border,#dae3e0);font-family:var(--font,"IBM Plex Sans Thai",sans-serif)}
+.xnav-in{max-width:1320px;margin:0 auto;padding:7px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.xnav-home{font-size:12.5px;color:var(--muted,#6c7d79);text-decoration:none;white-space:nowrap}
+.xnav-home:hover{color:var(--accent,#0e7c6b)}
+.xnav-seg{margin-left:auto;display:flex;border:1px solid var(--border-strong,#c1cecb);border-radius:999px;overflow:hidden;background:var(--surface,#fff)}
+.xnav-seg a{padding:5px 14px;font-size:12.5px;text-decoration:none;color:var(--muted,#6c7d79);white-space:nowrap;line-height:1.5}
+.xnav-seg a + a{border-left:1px solid var(--border,#dae3e0)}
+.xnav-seg a:hover{color:var(--ink,#12211f)}
+.xnav-seg a.on{background:var(--accent,#0e7c6b);color:#fff;font-weight:500}
+@media(max-width:560px){.xnav-seg{margin-left:0;width:100%}.xnav-seg a{flex:1;text-align:center}}
+
+</style>
+
+<div class="xnav">
+  <div class="xnav-in">
+    <a class="xnav-home" href="./">&#8592; หน้าเลือกเครื่องมือ</a>
+    <nav class="xnav-seg" aria-label="สลับเครื่องมือ">
+      <a href="./builder1.html">Builder 1 &middot; รายข้อเชิงลึก</a>
+      <a href="./builder2.html" class="on">Builder 2 &middot; ชุดตามผัง</a>
+    </nav>
+  </div>
+</div>
+
+<header>
+  <div class="hwrap">
+    <div>
+      <p class="eyebrow">ศรว. · Item Writing Support</p>
+      <h1>NLE Item Prompt Builder
+        <span class="sub">เลือกผังข้อสอบ → ได้คำสั่ง (prompt) พร้อมวางลง Claude / Gemini / ChatGPT / Perplexity</span>
+      </h1>
+    </div>
+    <div class="locked">
+      <div class="locked-h"><span>ข้อกำหนดตายตัว · ฝังในทุก prompt · แก้ไม่ได้</span></div>
+      <ol>
+        <li><span class="bub"></span><span>USMLE format MCQ 5 ตัวเลือก แบบ one best answer</span></li>
+        <li><span class="bub"></span><span>โจทย์มีส่วน clinical vignette และ lead-in</span></li>
+        <li><span class="bub"></span><span>5 ตัวเลือก ถูกที่สุดข้อเดียว ตัวลวงต้องทำงานได้ดี</span></li>
+        <li><span class="bub"></span><span>เนื้อหาไม่เกินเกณฑ์มาตรฐานฯ ของแพทยสภา</span></li>
+      </ol>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============ FORM ============ -->
+<div class="col-form">
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">1</span><h2>ขอบเขตการสอบ</h2><span class="hint">scope</span></div>
+    <div class="row">
+      <div>
+        <label class="fld" for="step">ขั้นตอน</label>
+        <select id="step">
+          <option value="ขั้นตอนที่ 1 (วิทยาศาสตร์การแพทย์พื้นฐาน)">ขั้นตอนที่ 1 — วิทยาศาสตร์การแพทย์พื้นฐาน</option>
+          <option value="ขั้นตอนที่ 2 (วิทยาศาสตร์การแพทย์คลินิก)" selected>ขั้นตอนที่ 2 — วิทยาศาสตร์การแพทย์คลินิก</option>
+          <option value="ขั้นตอนที่ 3 (ภาคปฏิบัติ — ส่วนข้อเขียนประกอบ)">ขั้นตอนที่ 3 — ภาคปฏิบัติ (ส่วนข้อเขียน)</option>
+        </select>
+      </div>
+      <div>
+        <label class="fld" for="n">จำนวนข้อ</label>
+        <input type="number" id="n" value="5" min="1" max="50">
+      </div>
+      <div>
+        <label class="fld" for="lang">ภาษาโจทย์</label>
+        <select id="lang">
+          <option value="ภาษาไทย (ศัพท์เทคนิคและชื่อยาใช้ภาษาอังกฤษ)" selected>ไทย + ศัพท์เทคนิคอังกฤษ</option>
+          <option value="ภาษาอังกฤษทั้งหมด">อังกฤษทั้งหมด</option>
+          <option value="สองภาษา: โจทย์ภาษาไทย ตามด้วยฉบับภาษาอังกฤษ">สองภาษา (ไทย + อังกฤษ)</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">2</span><h2>สาขาวิชา</h2><span class="hint">discipline · เลือกได้หลายข้อ</span></div>
+    <div class="grid g3" id="discipline"></div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">3</span><h2>ระบบร่างกาย</h2><span class="hint">organ system · เลือกได้หลายข้อ</span></div>
+    <div class="grid g3" id="system"></div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">4</span><h2>ภารกิจของแพทย์ที่ต้องการวัด</h2><span class="hint">physician task</span></div>
+    <div class="grid g2" id="task"></div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">5</span><h2>เพดานตามเกณฑ์แพทยสภา</h2><span class="hint">competency cap</span></div>
+    <div class="grid g2" id="cap"></div>
+    <div class="warn">ตัวเลือกนี้จะสั่ง AI ว่า “ห้ามออกเกินระดับที่กำหนด” และให้ระบุระดับที่อ้างกำกับทุกข้อ เพื่อให้ผู้ทบทวนตรวจย้อนกับเกณฑ์มาตรฐานผู้ประกอบวิชาชีพเวชกรรมฉบับจริงได้</div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">6</span><h2>บริบทผู้ป่วยและสถานพยาบาล</h2><span class="hint">context</span></div>
+    <div class="row" style="margin-bottom:10px">
+      <div>
+        <label class="fld">กลุ่มอายุ</label>
+        <div class="grid" id="age"></div>
+      </div>
+      <div>
+        <label class="fld">สถานที่ให้บริการ</label>
+        <div class="grid" id="setting"></div>
+      </div>
+      <div>
+        <label class="fld">ความเร่งด่วน</label>
+        <div class="grid" id="acuity"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">7</span><h2>ระดับการคิดและความยาก</h2><span class="hint">cognitive · difficulty</span></div>
+    <div class="row">
+      <div>
+        <label class="fld">ระดับการคิด</label>
+        <div class="grid" id="bloom"></div>
+      </div>
+      <div>
+        <label class="fld">ความยากเป้าหมาย</label>
+        <div class="grid" id="diff"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">8</span><h2>หัวข้อเจาะจงและเงื่อนไขเพิ่มเติม</h2><span class="hint">free text</span></div>
+    <label class="fld" for="topic">โรค / ภาวะ / หัวข้อที่ต้องการ (เว้นว่างได้ — AI จะเลือกให้ตามผังข้างบน)</label>
+    <textarea id="topic" placeholder="เช่น diabetic ketoacidosis, community-acquired pneumonia ในผู้สูงอายุ, การคัดกรอง CKD ใน PCU"></textarea>
+    <div style="height:10px"></div>
+    <label class="fld" for="avoid">สิ่งที่ต้องหลีกเลี่ยง</label>
+    <textarea id="avoid" placeholder="เช่น ห้ามใช้ยานอกบัญชียาหลักแห่งชาติ, หลีกเลี่ยงหัตถการที่เกินระดับ 2, ห้ามซ้ำกับคลังข้อสอบเดิมเรื่อง MI"></textarea>
+  </section>
+
+  <section class="blk">
+    <div class="blk-h"><span class="blk-n">9</span><h2>สิ่งที่ต้องการในผลลัพธ์</h2><span class="hint">deliverables</span></div>
+    <div class="grid g2" id="extras"></div>
+    <div style="height:12px"></div>
+    <label class="fld" for="fmt">รูปแบบไฟล์ผลลัพธ์</label>
+    <select id="fmt">
+      <option value="form" selected>แบบฟอร์มออกข้อสอบ (อ่านง่าย ใช้ทบทวนในคณะกรรมการ)</option>
+      <option value="table">ตาราง Markdown 1 แถวต่อ 1 ข้อ</option>
+      <option value="json">JSON array (นำเข้าระบบคลังข้อสอบ)</option>
+      <option value="classmarker">CSV สำหรับ ClassMarker</option>
+      <option value="gift">Moodle GIFT</option>
+    </select>
+  </section>
+</div>
+
+<!-- ============ OUTPUT ============ -->
+<div class="col-out">
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-m="claude"><span class="dot2"></span>Claude</div>
+    <div class="tab" data-m="chatgpt"><span class="dot2"></span>ChatGPT</div>
+    <div class="tab" data-m="gemini"><span class="dot2"></span>Gemini</div>
+    <div class="tab" data-m="perplexity"><span class="dot2"></span>Perplexity</div>
+  </div>
+  <p class="tab-note" id="tabnote"></p>
+
+  <pre class="out" id="out"></pre>
+  <div class="meter">
+    <span><b id="mChars">0</b> ตัวอักษร</span>
+    <span>~<b id="mTok">0</b> tokens</span>
+    <span><b id="mItems">0</b> ข้อ</span>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="btnCopy">คัดลอก prompt</button>
+    <button id="btnOpen">คัดลอกแล้วเปิดแอป</button>
+    <button class="ghost" id="btnTxt">ดาวน์โหลด .txt</button>
+    <button class="ghost" id="btnSave">บันทึกผัง .json</button>
+    <button class="ghost" id="btnLoad">โหลดผัง</button>
+    <button class="ghost" id="btnReset">ล้างค่า</button>
+    <input type="file" id="fileIn" accept=".json" hidden>
+  </div>
+  <div class="warn" style="margin-top:16px">
+    prompt นี้ช่วยร่างข้อสอบ ไม่ใช่ผู้ตัดสิน ทุกข้อต้องผ่านการทบทวนโดยผู้เชี่ยวชาญสาขา ตรวจความถูกต้องทางคลินิก ตรวจเทียบเกณฑ์แพทยสภาฉบับจริง และผ่าน item analysis หลังสอบก่อนเข้าคลังข้อสอบจริง
+  </div>
+</div>
+</main>
+
+<footer>
+  แก้ไขรายการตัวเลือกทั้งหมดได้ที่ตัวแปร <code>BLUEPRINT</code> ในไฟล์นี้ · แก้ข้อความคำสั่งหลักได้ที่ <code>CORE</code> และ <code>RULES</code> · ไฟล์เดียวจบ ไม่ต้องติดตั้งอะไร เปิดจากเครื่องหรืออัปขึ้น hosting ก็ได้
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   LAYER 1 — BLUEPRINT DATA
+   แก้ไขได้อิสระ ไม่กระทบส่วนอื่น
+   ===================================================================== */
+const BLUEPRINT = {
+  discipline:{type:'multi', items:[
+    'อายุรศาสตร์','ศัลยศาสตร์','กุมารเวชศาสตร์','สูติศาสตร์-นรีเวชวิทยา',
+    'ออร์โธปิดิกส์','เวชศาสตร์ฉุกเฉิน','เวชศาสตร์ครอบครัวและชุมชน','จิตเวชศาสตร์',
+    'จักษุวิทยา','โสต ศอ นาสิก','ตจวิทยา','วิสัญญีวิทยา',
+    'รังสีวิทยา','พยาธิวิทยาและเวชศาสตร์ชันสูตร','นิติเวชศาสตร์','เวชศาสตร์ป้องกัน'
+  ], def:[0]},
+  system:{type:'multi', items:[
+    'หัวใจและหลอดเลือด','ระบบหายใจ','ทางเดินอาหารและตับ','ไตและทางเดินปัสสาวะ',
+    'ต่อมไร้ท่อและเมแทบอลิซึม','ระบบประสาท','โลหิตวิทยา','โรคติดเชื้อ',
+    'ภูมิคุ้มกันและรูมาติก','ผิวหนัง','กล้ามเนื้อ กระดูก ข้อ','ระบบสืบพันธุ์และการตั้งครรภ์',
+    'ตา','หู คอ จมูก','จิตเวชและพฤติกรรม','สมดุลน้ำ เกลือแร่ กรด-ด่าง','พิษวิทยาและอุบัติเหตุ'
+  ], def:[0]},
+  task:{type:'multi', items:[
+    'การสร้างเสริมสุขภาพ ป้องกันโรค และการคัดกรอง',
+    'การซักประวัติและตรวจร่างกาย',
+    'กลไกการเกิดโรคและพยาธิสรีรวิทยา',
+    'การวินิจฉัยและการวินิจฉัยแยกโรค',
+    'การเลือกส่งตรวจและการแปลผลทางห้องปฏิบัติการ/ภาพรังสี',
+    'การรักษาด้วยยาและการเลือกยา',
+    'การจัดการเบื้องต้นและการส่งต่อ',
+    'การพยากรณ์โรคและการดูแลต่อเนื่อง',
+    'เวชจริยศาสตร์ กฎหมาย และการสื่อสาร',
+    'ระบบสุขภาพ ความปลอดภัยผู้ป่วย และเวชระเบียน'
+  ], def:[3,5]},
+  cap:{type:'single', items:[
+    ['ระดับ 1 — รู้และอธิบายได้','ออกได้เฉพาะความรู้ความเข้าใจเรื่องโรค กลไก และการป้องกัน ห้ามถามการรักษาเชิงลึก'],
+    ['ระดับ 2 — วินิจฉัยและรักษาเบื้องต้นแล้วส่งต่อ','ออกได้ถึงการวินิจฉัย การดูแลเบื้องต้น และการตัดสินใจส่งต่อ ห้ามถามการรักษาจำเพาะขั้นสูง'],
+    ['ระดับ 3 — วินิจฉัยและรักษาได้ด้วยตนเอง','ออกได้ถึงการเลือกการรักษาจำเพาะที่แพทย์เวชปฏิบัติทั่วไปทำได้เอง'],
+    ['ระดับ 4 — วินิจฉัย รักษา และดูแลต่อเนื่องได้ครบวงจร','ออกได้ครอบคลุมถึงการติดตามระยะยาวและการดูแลภาวะแทรกซ้อน'],
+    ['ไม่จำกัดเพดาน (ให้ AI ยึดเกณฑ์แพทยสภาโดยรวม)','ให้ AI พิจารณาเองว่าเนื้อหาอยู่ในเกณฑ์ พร้อมระบุระดับกำกับทุกข้อ']
+  ], def:1},
+  age:{type:'multi', items:['ทารกแรกเกิด','เด็ก','วัยรุ่น','ผู้ใหญ่','ผู้สูงอายุ','หญิงตั้งครรภ์'], def:[3,4]},
+  setting:{type:'multi', items:['OPD / คลินิกผู้ป่วยนอก','PCU / รพ.สต. / ชุมชน','ห้องฉุกเฉิน','หอผู้ป่วยใน','ICU','ห้องคลอด / ห้องผ่าตัด'], def:[0,2]},
+  acuity:{type:'multi', items:['เฉียบพลัน / ภาวะฉุกเฉิน','กึ่งเฉียบพลัน','เรื้อรัง / ติดตามระยะยาว'], def:[0]},
+  bloom:{type:'single', items:[
+    ['Recall — จำและระบุข้อเท็จจริง',''],
+    ['Interpretation — แปลผลข้อมูลที่ให้มา',''],
+    ['Application / Problem solving — ประยุกต์ตัดสินใจในสถานการณ์จริง','']
+  ], def:2},
+  diff:{type:'single', items:[
+    ['ง่าย (p ≈ 0.70–0.90)',''],
+    ['ปานกลาง (p ≈ 0.40–0.70)',''],
+    ['ยาก (p ≈ 0.20–0.40)',''],
+    ['คละระดับตามสัดส่วน ง่าย 30% ปานกลาง 50% ยาก 20%','']
+  ], def:1},
+  extras:{type:'multi', items:[
+    'เหตุผลเฉลย พร้อมอธิบายว่าทำไมตัวลวงแต่ละตัวจึงผิด',
+    'ระบุ blueprint tag กำกับทุกข้อ (สาขา / ระบบ / ภารกิจ / ระดับเกณฑ์)',
+    'ประเมินความยากคาดการณ์และระดับการคิดของแต่ละข้อ',
+    'อ้างอิงแนวเวชปฏิบัติไทยหรือราชวิทยาลัยฯ ที่ใช้ตัดสินคำตอบ',
+    'ระบุ key concept / learning objective ที่ข้อนั้นวัด',
+    'แนบตารางผลตรวจหรือคำบรรยายภาพเป็นข้อความ (ไม่ใช้รูปจริง)',
+    'ตรวจสอบและรายงานว่าแต่ละข้อผ่านกฎการเขียนข้อสอบครบทุกข้อ'
+  ], def:[0,1,3]}
+};
+
+/* =====================================================================
+   LAYER 2 — RENDER CONTROLS
+   ===================================================================== */
+function render(key, mount){
+  const cfg = BLUEPRINT[key], el = document.getElementById(mount);
+  cfg.items.forEach((raw,i)=>{
+    const label = Array.isArray(raw)?raw[0]:raw;
+    const note  = Array.isArray(raw)?raw[1]:'';
+    const isMulti = cfg.type==='multi';
+    let checked = false;
+    if(isMulti && Array.isArray(cfg.def)) checked = cfg.def.includes(i);
+    if(!isMulti) checked = (cfg.def??0)===i;
+    const l = document.createElement('label');
+    l.className='opt';
+    l.title = note||'';
+    l.innerHTML = `<input type="${isMulti?'checkbox':'radio'}" name="${key}" value="${i}" ${checked?'checked':''}>
+                   <span class="dot"></span><span>${label}</span>`;
+    el.appendChild(l);
+  });
+}
+['discipline','system','task','cap','age','setting','acuity','bloom','diff','extras']
+  .forEach(k=>render(k,k));
+
+/* ปุ่มเลือกทั้งหมด / ล้าง สำหรับกลุ่มที่เลือกได้หลายข้อ */
+['discipline','system','task','extras'].forEach(k=>{
+  const head = document.getElementById(k).closest('section').querySelector('.blk-h');
+  const wrap = document.createElement('span');
+  wrap.className='bulk';
+  wrap.innerHTML = `<button type="button" data-bulk="${k}" data-on="1">ทั้งหมด</button><button type="button" data-bulk="${k}" data-on="0">ล้าง</button>`;
+  head.appendChild(wrap);
+});
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-bulk]'); if(!b) return;
+  document.querySelectorAll(`input[name="${b.dataset.bulk}"]`)
+    .forEach(i=> i.checked = b.dataset.on==='1');
+  update();
+});
+
+function picked(key){
+  const cfg = BLUEPRINT[key];
+  return [...document.querySelectorAll(`input[name="${key}"]:checked`)]
+    .map(i=>{const r=cfg.items[+i.value];return Array.isArray(r)?r:[r,''];});
+}
+const names = k => picked(k).map(x=>x[0]);
+
+/* =====================================================================
+   LAYER 3 — PROMPT COMPOSER
+   ===================================================================== */
+
+/* --- 3a. หัวใจของระบบ: ข้อกำหนด 4 ข้อที่ผู้ใช้แก้ไม่ได้ --- */
+const CORE = `คุณคือกรรมการออกข้อสอบ (item writer) ที่มีประสบการณ์ออกข้อสอบใบประกอบวิชาชีพเวชกรรม (National Licensing Examination, ศรว.) และผ่านการอบรมการเขียนข้อสอบตามแนวทาง NBME งานของคุณคือร่างข้อสอบคุณภาพระดับใช้สอบจริง
+
+ข้อกำหนดบังคับ 4 ข้อ ห้ามละเมิดไม่ว่ากรณีใด
+1. เป็นข้อสอบปรนัยรูปแบบ USMLE จำนวน 5 ตัวเลือก (A–E) ชนิด one best answer เท่านั้น
+2. ทุกข้อต้องมีสองส่วนชัดเจน คือ clinical vignette และ lead-in ที่เป็นคำถามสมบูรณ์
+3. มีคำตอบที่ถูกที่สุดเพียงข้อเดียว ตัวลวงที่เหลืออีก 4 ตัวต้องเป็น functioning distractor คือดูน่าเชื่อสำหรับผู้ที่เข้าใจคลาดเคลื่อน แต่ผู้เชี่ยวชาญตัดออกได้ด้วยเหตุผลทางคลินิก
+4. เนื้อหาต้องไม่เกินเกณฑ์มาตรฐานผู้ประกอบวิชาชีพเวชกรรมของแพทยสภา ทั้งรายการโรคและระดับความสามารถ`;
+
+/* --- 3b. กฎการเขียนข้อสอบ --- */
+const RULES = `กฎการเขียนข้อสอบที่ต้องทำตามทุกข้อ
+
+โครงสร้าง vignette เรียงตามลำดับ
+อายุ เพศ และสถานที่พบผู้ป่วย ต่อด้วยอาการสำคัญพร้อมระยะเวลา ต่อด้วยประวัติปัจจุบัน ประวัติอดีต ยาที่ใช้ ประวัติครอบครัวและสังคมเท่าที่จำเป็น ต่อด้วยสัญญาณชีพ ผลตรวจร่างกาย และผลตรวจทางห้องปฏิบัติการหรือภาพรังสีเมื่อจำเป็น
+
+การทดสอบตัวเอง
+ปิดตัวเลือกทั้ง 5 แล้วอ่านเฉพาะ vignette กับ lead-in ผู้เชี่ยวชาญต้องตอบได้โดยไม่ต้องเห็นตัวเลือก ถ้าตอบไม่ได้แปลว่าโจทย์ให้ข้อมูลไม่พอ ต้องแก้
+
+สิ่งที่ห้ามทำ
+ห้ามใช้ lead-in เชิงปฏิเสธ เช่น ข้อใดไม่ใช่ ข้อใดยกเว้น
+ห้ามใช้คำสัมบูรณ์ เช่น เสมอ ทุกครั้ง ไม่เคย ทั้งหมด
+ห้ามมีตัวเลือก ถูกทุกข้อ ผิดทุกข้อ หรือตัวเลือกที่รวมข้ออื่น
+ห้ามให้ตัวเลือกที่ถูกยาวกว่าหรือละเอียดกว่าตัวลวงอย่างสังเกตได้
+ห้ามใช้คำในโจทย์ซ้ำกับตัวถูกจนกลายเป็นตัวชี้นำ (word repeat cue)
+ห้ามให้รูปประโยคหรือหลักไวยากรณ์ชี้ตัวถูก (grammatical cue)
+ห้ามใช้ชื่อการค้าของยา ให้ใช้ชื่อสามัญเสมอ
+ห้ามให้ข้อมูลในโจทย์ที่ไม่มีบทบาทในการตัดสินคำตอบเลย
+
+สิ่งที่ต้องทำ
+ตัวเลือกทั้ง 5 ต้องเป็นสิ่งเดียวกันทั้งชุด เช่น เป็นการวินิจฉัยทั้งหมด หรือเป็นการรักษาทั้งหมด จะปนกันไม่ได้
+เรียงตัวเลือกอย่างมีตรรกะ ถ้าเป็นตัวเลขให้เรียงจากน้อยไปมาก ถ้าเป็นข้อความให้เรียงตามตัวอักษร
+กระจายตำแหน่งเฉลยให้ไม่ซ้ำตัวอักษรเดิมติดกัน
+ใช้หน่วยแบบที่ใช้จริงในโรงพยาบาลไทย และวงเล็บค่าปกติกำกับเมื่อผลตรวจนั้นเป็นตัวตัดสิน
+ใช้บริบทผู้ป่วยไทยและระบบบริการสุขภาพไทย ทั้งชื่อสถานพยาบาล สิทธิการรักษา และทรัพยากรที่มีจริง
+ตัวลวงแต่ละตัวต้องมาจากความเข้าใจผิดที่พบจริงในนักศึกษาแพทย์ ไม่ใช่ตัวเลือกที่ตัดออกได้ทันที`;
+
+const FORMATS = {
+  form:`จัดรูปแบบผลลัพธ์เป็นแบบฟอร์มออกข้อสอบ แยกแต่ละข้อด้วยเส้นคั่น และในแต่ละข้อเรียงตามหัวข้อนี้
+ข้อที่ / Clinical vignette / Lead-in / ตัวเลือก A ถึง E / เฉลย / เหตุผลของเฉลย / เหตุผลที่ตัวลวงแต่ละตัวผิด / ข้อมูลกำกับข้อสอบ`,
+  table:`จัดรูปแบบผลลัพธ์เป็นตาราง Markdown หนึ่งแถวต่อหนึ่งข้อ คอลัมน์คือ ข้อที่ | Vignette | Lead-in | A | B | C | D | E | เฉลย | เหตุผล | tag
+ภายในเซลล์ห้ามขึ้นบรรทัดใหม่ ให้ใช้เครื่องหมาย / คั่นแทน`,
+  json:`จัดรูปแบบผลลัพธ์เป็น JSON array เท่านั้น ห้ามมีข้อความอื่นนอก JSON และห้ามครอบด้วย markdown code fence
+แต่ละ object มี key ดังนี้
+id, vignette, lead_in, options {A,B,C,D,E}, answer, rationale_correct, rationale_distractors {A,B,C,D,E}, blueprint {discipline, system, task, competency_level}, cognitive_level, estimated_difficulty, reference`,
+  classmarker:`จัดรูปแบบผลลัพธ์เป็น CSV สำหรับนำเข้า ClassMarker เท่านั้น ห้ามมีข้อความอื่น
+แถวแรกเป็นหัวตาราง จากนั้นหนึ่งแถวต่อหนึ่งข้อ คอลัมน์เรียงดังนี้
+question,option_a,option_b,option_c,option_d,option_e,correct,explanation
+รวม vignette กับ lead-in ไว้ในคอลัมน์ question โดยคั่นด้วยช่องว่างสองครั้ง
+ครอบทุกฟิลด์ด้วยเครื่องหมายคำพูดคู่ และหากในข้อความมีเครื่องหมายคำพูดให้พิมพ์ซ้ำสองตัว
+คอลัมน์ correct ใส่เพียงตัวอักษร a b c d หรือ e`,
+  gift:`จัดรูปแบบผลลัพธ์เป็น Moodle GIFT เท่านั้น ห้ามมีข้อความอื่น
+ใช้เครื่องหมาย = นำหน้าตัวเลือกที่ถูก และ ~ นำหน้าตัวลวง ใส่ #### ตามด้วยเหตุผลเฉลยท้ายแต่ละข้อ
+escape อักขระ = ~ # { } : ด้วย backslash`
+};
+
+const ADAPTER = {
+  claude:{
+    note:'ห่อคำสั่งด้วยแท็ก XML ซึ่ง Claude ตอบสนองดีที่สุด และสั่งให้ตรวจสอบตัวเองในใจก่อนแสดงผล เหมาะกับการออกทีละหลายข้อในครั้งเดียว',
+    url:q=>'https://claude.ai/new?q='+encodeURIComponent(q),
+    wrap:s=>`<role>\n${s.core}\n</role>\n\n<item_writing_rules>\n${s.rules}\n</item_writing_rules>\n\n<blueprint>\n${s.bp}\n</blueprint>\n\n<output_format>\n${s.fmt}\n</output_format>\n\n<self_check>\n${s.check}\n</self_check>\n\n<task>\nร่างข้อสอบตาม blueprint ข้างต้นให้ครบจำนวน ตรวจด้วย self_check ทุกข้อในใจก่อน แก้ข้อที่ไม่ผ่านให้เรียบร้อย แล้วแสดงเฉพาะผลลัพธ์สุดท้ายตาม output_format ห้ามแสดงกระบวนการตรวจสอบ\n</task>`
+  },
+  chatgpt:{
+    note:'ใช้หัวข้อ Markdown และสั่งให้ทำงานเป็นขั้น เหมาะกับการขอผลลัพธ์แบบ JSON หรือ CSV ที่ต้องเป๊ะตามสคีมา',
+    url:q=>'https://chatgpt.com/?q='+encodeURIComponent(q),
+    wrap:s=>`# บทบาท\n${s.core}\n\n# กฎการเขียนข้อสอบ\n${s.rules}\n\n# ผังข้อสอบที่สั่ง\n${s.bp}\n\n# รูปแบบผลลัพธ์\n${s.fmt}\n\n# ตรวจสอบก่อนตอบ\n${s.check}\n\n# วิธีทำงาน\nขั้นที่ 1 เลือกโรคหรือภาวะให้ครบจำนวนตามผัง โดยกระจายไม่ให้ซ้ำกัน\nขั้นที่ 2 ร่างข้อสอบทีละข้อ\nขั้นที่ 3 ตรวจทุกข้อด้วยรายการตรวจสอบ แล้วแก้ข้อที่ไม่ผ่าน\nขั้นที่ 4 แสดงเฉพาะผลลัพธ์สุดท้ายตามรูปแบบที่กำหนด ห้ามแสดงขั้นที่ 1 ถึง 3`
+  },
+  gemini:{
+    note:'ระบุหัวข้อและขอบเขตชัดเจนแบบตรงไปตรงมา และย้ำข้อห้ามซ้ำท้ายคำสั่ง เพราะ Gemini มีแนวโน้มเติมเนื้อหานอกขอบเขตเมื่อคำสั่งยาว',
+    url:()=>'https://gemini.google.com/app',
+    wrap:s=>`คำสั่งงาน: ร่างข้อสอบ MCQ สำหรับการสอบใบประกอบวิชาชีพเวชกรรม\n\n## 1 บทบาทและข้อกำหนดบังคับ\n${s.core}\n\n## 2 กฎการเขียนข้อสอบ\n${s.rules}\n\n## 3 ผังข้อสอบ\n${s.bp}\n\n## 4 รูปแบบผลลัพธ์\n${s.fmt}\n\n## 5 รายการตรวจสอบก่อนตอบ\n${s.check}\n\n## 6 ย้ำอีกครั้ง\nห้ามออกนอกขอบเขตในหัวข้อ 3 ห้ามเกินเพดานความสามารถที่ระบุ ห้ามเปลี่ยนจำนวนตัวเลือกจาก 5 ตัว ห้ามมีคำตอบถูกมากกว่าหนึ่งข้อ แสดงเฉพาะผลลัพธ์สุดท้ายเท่านั้น`
+  },
+  perplexity:{
+    note:'จุดแข็งคือค้นและอ้างอิงแหล่งจริง จึงสั่งให้ยืนยันความถูกต้องกับแนวเวชปฏิบัติก่อนออกข้อสอบและแนบลิงก์ ควรขอครั้งละไม่เกิน 3 ถึง 5 ข้อ',
+    url:q=>'https://www.perplexity.ai/search?q='+encodeURIComponent(q),
+    wrap:s=>`${s.core}\n\n${s.rules}\n\nผังข้อสอบที่สั่ง\n${s.bp}\n\nขั้นตอนเฉพาะสำหรับงานนี้\nก่อนร่างข้อสอบ ให้ค้นแนวเวชปฏิบัติปัจจุบันของหัวข้อที่จะออก โดยให้น้ำหนักกับแนวทางของราชวิทยาลัยหรือสมาคมวิชาชีพในประเทศไทยก่อน แล้วจึงใช้แนวทางสากลเป็นตัวเสริม ใช้ข้อมูลที่ค้นได้เป็นฐานในการตัดสินว่าตัวเลือกใดถูกที่สุด และแนบลิงก์อ้างอิงกำกับทุกข้อ พร้อมระบุปีของแนวทางที่ใช้\n\nรูปแบบผลลัพธ์\n${s.fmt}\n\nรายการตรวจสอบก่อนตอบ\n${s.check}`
+  }
+};
+
+function checklist(){
+  return `ตรวจทุกข้อด้วยรายการนี้ ถ้าข้อใดไม่ผ่านให้แก้ก่อนแสดงผล
+มี vignette และ lead-in ครบทั้งสองส่วน
+ปิดตัวเลือกแล้วยังตอบได้
+ตัวเลือกครบ 5 ตัว เป็นประเภทเดียวกันทั้งหมด และยาวใกล้เคียงกัน
+ถูกที่สุดเพียงข้อเดียว และตัวลวงทั้ง 4 อธิบายได้ว่าคนเข้าใจผิดแบบใดจึงจะเลือก
+ไม่มี lead-in เชิงปฏิเสธ ไม่มีคำสัมบูรณ์ ไม่มีถูกทุกข้อผิดทุกข้อ
+ไม่มีตัวชี้นำทางไวยากรณ์หรือคำซ้ำระหว่างโจทย์กับเฉลย
+เนื้อหาและระดับความสามารถไม่เกินเพดานที่ระบุในผัง
+ใช้ชื่อยาสามัญ หน่วยและบริบทเป็นแบบไทย`;
+}
+
+function buildBlueprint(){
+  const L=[];
+  const push=(k,v)=>{ if(v && v.length) L.push(`${k}: ${Array.isArray(v)?v.join(', '):v}`); };
+  push('ขั้นตอนการสอบ', document.getElementById('step').value);
+  push('จำนวนข้อที่ต้องการ', document.getElementById('n').value + ' ข้อ');
+  push('ภาษาที่ใช้', document.getElementById('lang').value);
+  const open = 'ไม่กำหนด ให้เลือกเองภายในขอบเขตของขั้นตอนการสอบและเกณฑ์แพทยสภา';
+  L.push('สาขาวิชา: ' + (names('discipline').join(', ') || open));
+  L.push('ระบบร่างกาย: ' + (names('system').join(', ') || open));
+  L.push('ภารกิจของแพทย์ที่ต้องการวัด: ' + (names('task').join(', ') || open));
+  if(names('discipline').length + names('system').length > 3)
+    L.push('การกระจายข้อสอบ: กระจายให้ครอบคลุมสาขาและระบบที่ระบุอย่างสมดุล ไม่กระจุกอยู่หัวข้อเดียว');
+
+  const cap = picked('cap')[0];
+  if(cap) L.push(`เพดานตามเกณฑ์แพทยสภา: ${cap[0]}\n  ขอบเขตที่อนุญาต: ${cap[1]}\n  ทุกข้อต้องระบุระดับความสามารถที่อ้างกำกับไว้ด้วย`);
+
+  push('กลุ่มอายุผู้ป่วย', names('age'));
+  push('สถานที่ให้บริการ', names('setting'));
+  push('ความเร่งด่วนของภาวะ', names('acuity'));
+  push('ระดับการคิดที่ต้องการวัด', names('bloom'));
+  push('ความยากเป้าหมาย', names('diff'));
+
+  const topic = document.getElementById('topic').value.trim();
+  if(topic) L.push(`หัวข้อที่กำหนดเจาะจง: ${topic}`);
+  else L.push('หัวข้อ: ไม่กำหนดเจาะจง ให้เลือกโรคหรือภาวะเองภายในขอบเขตข้างต้น โดยกระจายให้ไม่ซ้ำกันและเป็นเรื่องที่พบบ่อยหรือสำคัญในเวชปฏิบัติไทย');
+
+  const avoid = document.getElementById('avoid').value.trim();
+  if(avoid) L.push(`สิ่งที่ต้องหลีกเลี่ยง: ${avoid}`);
+
+  const ex = names('extras');
+  if(ex.length) L.push('สิ่งที่ต้องมีในผลลัพธ์:\n  - ' + ex.join('\n  - '));
+  return L.join('\n');
+}
+
+function buildPrompt(model){
+  const s = {
+    core: CORE,
+    rules: RULES,
+    bp: buildBlueprint(),
+    fmt: FORMATS[document.getElementById('fmt').value],
+    check: checklist()
+  };
+  return ADAPTER[model].wrap(s);
+}
+
+/* =====================================================================
+   LAYER 4 — DELIVERY
+   ===================================================================== */
+let model = 'claude';
+const $ = id => document.getElementById(id);
+
+function update(){
+  const p = buildPrompt(model);
+  $('out').textContent = p;
+  $('mChars').textContent = p.length.toLocaleString();
+  $('mTok').textContent = Math.round(p.length/2.6).toLocaleString();
+  $('mItems').textContent = $('n').value;
+  $('tabnote').textContent = ADAPTER[model].note;
+  return p;
+}
+
+$('tabs').addEventListener('click', e=>{
+  const t = e.target.closest('.tab'); if(!t) return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); model = t.dataset.m; update();
+});
+document.addEventListener('input', e=>{ if(e.target.closest('main')) update(); });
+document.addEventListener('change', e=>{ if(e.target.closest('main')) update(); });
+
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+async function copyText(txt){
+  try{ await navigator.clipboard.writeText(txt); return true; }
+  catch{
+    const ta=document.createElement('textarea'); ta.value=txt;
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+    ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok;
+  }
+}
+$('btnCopy').onclick = async ()=>{
+  toast(await copyText(update()) ? 'คัดลอกแล้ว วางในแชท AI ได้เลย' : 'คัดลอกไม่สำเร็จ ให้เลือกข้อความในกล่องแล้วกด Ctrl+C');
+};
+$('btnOpen').onclick = async ()=>{
+  const p = update();
+  await copyText(p);
+  const url = ADAPTER[model].url(p);
+  // ลิงก์แบบส่ง prompt ทาง URL มีเพดานความยาว ถ้ายาวเกินให้เปิดหน้าเปล่าแล้วให้ผู้ใช้วางเอง
+  const safe = url.length > 7000 ? url.split('?')[0] : url;
+  window.open(safe,'_blank','noopener');
+  toast('คัดลอก prompt แล้ว ถ้าช่องแชทว่างให้กดวาง');
+};
+function dl(name, txt, type){
+  const b=new Blob([txt],{type:type||'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+$('btnTxt').onclick = ()=>{ dl(`nle-prompt-${model}.txt`, update()); toast('ดาวน์โหลดแล้ว'); };
+
+/* บันทึก/โหลดผัง เป็นไฟล์ JSON แทนการเก็บในเบราว์เซอร์ ใช้ส่งต่อในคณะกรรมการได้ */
+function snapshot(){
+  const o={ _v:1, model,
+    step:$('step').value, n:$('n').value, lang:$('lang').value,
+    fmt:$('fmt').value, topic:$('topic').value, avoid:$('avoid').value, sel:{} };
+  Object.keys(BLUEPRINT).forEach(k=>{
+    o.sel[k]=[...document.querySelectorAll(`input[name="${k}"]:checked`)].map(i=>+i.value);
+  });
+  return o;
+}
+$('btnSave').onclick = ()=>{
+  dl('nle-blueprint-preset.json', JSON.stringify(snapshot(),null,2), 'application/json');
+  toast('บันทึกผังเป็นไฟล์แล้ว');
+};
+$('btnLoad').onclick = ()=> $('fileIn').click();
+$('fileIn').onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const o=JSON.parse(r.result);
+      $('step').value=o.step; $('n').value=o.n; $('lang').value=o.lang;
+      $('fmt').value=o.fmt; $('topic').value=o.topic||''; $('avoid').value=o.avoid||'';
+      Object.keys(BLUEPRINT).forEach(k=>{
+        document.querySelectorAll(`input[name="${k}"]`).forEach(i=>{
+          i.checked = (o.sel[k]||[]).includes(+i.value);
+        });
+      });
+      if(o.model){ document.querySelector(`.tab[data-m="${o.model}"]`)?.click(); }
+      update(); toast('โหลดผังเรียบร้อย');
+    }catch{ toast('ไฟล์ผังไม่ถูกต้อง'); }
+  };
+  r.readAsText(f); e.target.value='';
+};
+$('btnReset').onclick = ()=>{ if(confirm('ล้างค่าทั้งหมดกลับเป็นค่าเริ่มต้น')) location.reload(); };
+
+update();
+</script>

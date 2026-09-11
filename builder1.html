@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="เครื่องมือประกอบ prompt ออกข้อสอบปรนัย MCQ สำหรับอาจารย์แพทย์ (MCQ National / ศรว.)">
+<title>เครื่องมือสร้าง Prompt ข้อสอบ MCQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#eaf0ee; --surface:#ffffff; --surface-2:#f4f8f6;
+  --ink:#12211f; --ink-soft:#41524f; --muted:#6c7d79;
+  --border:#dae3e0; --border-strong:#c1cecb;
+  --accent:#0e7c6b; --accent-ink:#0a5347; --accent-soft:#d8ece7;
+  --good:#1f8a5b; --warn:#a86a12; --crit:#bd4230;
+  --good-soft:#dcefe5; --warn-soft:#f6ebd6; --crit-soft:#f6ddd8;
+  --preview-bg:#101d1b; --preview-panel:#172826; --preview-ink:#dfeae7;
+  --preview-muted:#7f938f; --preview-accent:#4ec4ac; --preview-border:#243936;
+  --shadow:0 1px 2px rgba(18,33,31,.06),0 4px 16px rgba(18,33,31,.05);
+  --radius:12px; --radius-sm:8px;
+  --font:"IBM Plex Sans Thai","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+    --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+    --border:#243230; --border-strong:#33443f;
+    --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+    --good:#3fbb82; --warn:#d09a3c; --crit:#e0705c;
+    --good-soft:#122b22; --warn-soft:#2c2415; --crit-soft:#2e1a16;
+    --preview-bg:#080f0e; --preview-panel:#101a18; --preview-ink:#dceae6;
+    --preview-muted:#71847f; --preview-accent:#4ec4ac; --preview-border:#1d2b28;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+  --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+  --border:#243230; --border-strong:#33443f;
+  --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+  --good:#3fbb82; --warn:#d09a3c; --crit:#e0705c;
+  --good-soft:#122b22; --warn-soft:#2c2415; --crit-soft:#2e1a16;
+  --preview-bg:#080f0e; --preview-panel:#101a18; --preview-ink:#dceae6;
+  --preview-muted:#71847f; --preview-accent:#4ec4ac; --preview-border:#1d2b28;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.5;font-size:15px}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.top-inner{max-width:1320px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.mark{width:34px;height:34px;flex:none;border-radius:9px;background:linear-gradient(145deg,var(--accent),var(--accent-ink));display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px;box-shadow:var(--shadow)}
+.brand-txt{min-width:0}
+.brand-txt h1{font-size:16px;letter-spacing:-.01em;line-height:1.2}
+.brand-txt p{margin:1px 0 0;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-spacer{flex:1}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px}
+.seg button{border:none;background:none;color:var(--ink-soft);font-size:13px;font-weight:500;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:var(--shadow)}
+.ghost{border:1px solid var(--border-strong);background:var(--surface);color:var(--ink-soft);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.wrap{max-width:1320px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:960px){.wrap{grid-template-columns:1fr;gap:16px}}
+.form{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.card-h .n{width:22px;height:22px;flex:none;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-size:12px;font-weight:700;font-family:var(--mono)}
+.card-h h2{font-size:13.5px;letter-spacing:.01em}
+.card-b{padding:16px;display:flex;flex-direction:column;gap:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:520px){.grid2,.grid3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label{font-size:12px;font-weight:600;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.field .hint{font-size:11px;color:var(--muted);font-weight:400}
+.tag{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 5px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:var(--surface);color:var(--ink);border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);padding:9px 11px;font-size:14px;transition:border-color .12s}
+input:hover,select:hover,textarea:hover{border-color:var(--muted)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{resize:vertical;min-height:54px;line-height:1.5}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c7d79' stroke-width='2.2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{border:1px solid var(--border-strong);background:var(--surface);color:var(--ink-soft);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:500;transition:.12s}
+.pill:hover{border-color:var(--accent)}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill.sm{padding:5px 11px;font-size:12.5px}
+.chip{border:1px solid var(--border-strong);background:var(--surface);color:var(--ink-soft);border-radius:7px;padding:6px 10px;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.chip .pri{font-size:9.5px;font-family:var(--mono);background:var(--accent);color:#fff;border-radius:4px;padding:0 4px;letter-spacing:.03em}
+.mpl{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px}
+.mpl .bar{flex:1;height:7px;border-radius:99px;background:linear-gradient(90deg,var(--crit),var(--warn),var(--good));position:relative;opacity:.85}
+.mpl .dot{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2.5px solid var(--ink);transform:translate(-50%,-50%);transition:left .18s}
+.mpl .val{font-family:var(--mono);font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.swrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px}
+.switch{position:relative;width:42px;height:24px;flex:none}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch .track{position:absolute;inset:0;background:var(--border-strong);border-radius:99px;transition:.15s}
+.switch .track::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch input:checked+.track{background:var(--accent)}
+.switch input:checked+.track::after{transform:translateX(18px)}
+.note{font-size:11.5px;color:var(--muted);line-height:1.45}
+.note a{color:var(--accent)}
+.batch-only{display:none}
+body[data-mode="batch"] .batch-only{display:flex}
+body[data-mode="batch"] .single-only{display:none}
+body[data-view="lite"] .adv{display:none}
+body[data-view="lite"] .grid3{grid-template-columns:1fr}
+.improve-only{display:none}
+body[data-purpose="improve"] .improve-only{display:flex}
+.previewwrap{position:sticky;top:76px;display:flex;flex-direction:column;gap:0;background:var(--preview-bg);border:1px solid var(--preview-border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);max-height:calc(100vh - 96px)}
+@media(max-width:960px){.previewwrap{position:static;max-height:none}}
+.pv-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--preview-border);flex-wrap:wrap}
+.pv-dots{display:flex;gap:6px}
+.pv-dots span{width:11px;height:11px;border-radius:50%;background:var(--preview-border)}
+.pv-dots span:first-child{background:#e0705c}.pv-dots span:nth-child(2){background:#d0a03c}.pv-dots span:nth-child(3){background:#4ec4ac}
+.pv-title{font-family:var(--mono);font-size:12px;color:var(--preview-muted);letter-spacing:.02em}
+.pv-meta{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--preview-muted)}
+.pv-body{overflow:auto;padding:16px 17px;flex:1}
+.pv-body pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:var(--preview-ink);white-space:pre-wrap;word-break:break-word}
+.pv-body .hl{color:var(--preview-accent);font-weight:500}
+.pv-foot{display:flex;gap:9px;padding:12px 15px;border-top:1px solid var(--preview-border);flex-wrap:wrap;align-items:center}
+.btn{border:none;border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.13s}
+.btn.primary{background:var(--preview-accent);color:#062420}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.line{background:transparent;color:var(--preview-ink);border:1px solid var(--preview-border)}
+.btn.line:hover{border-color:var(--preview-accent);color:var(--preview-accent)}
+.pv-foot .spacer{flex:1}
+.pv-foot .cnt{font-family:var(--mono);font-size:11px;color:var(--preview-muted)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{max-width:1320px;margin:0 auto;padding:6px 20px 30px;color:var(--muted);font-size:11.5px;line-height:1.6}
+.foot b{color:var(--ink-soft);font-weight:600}
+
+/* ===== แถบสลับเครื่องมือ (ใช้ร่วมกันทั้งสอง builder) ===== */
+.xnav{background:var(--surface-2,#f4f8f6);border-bottom:1px solid var(--border,#dae3e0);font-family:var(--font,"IBM Plex Sans Thai",sans-serif)}
+.xnav-in{max-width:1320px;margin:0 auto;padding:7px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.xnav-home{font-size:12.5px;color:var(--muted,#6c7d79);text-decoration:none;white-space:nowrap}
+.xnav-home:hover{color:var(--accent,#0e7c6b)}
+.xnav-seg{margin-left:auto;display:flex;border:1px solid var(--border-strong,#c1cecb);border-radius:999px;overflow:hidden;background:var(--surface,#fff)}
+.xnav-seg a{padding:5px 14px;font-size:12.5px;text-decoration:none;color:var(--muted,#6c7d79);white-space:nowrap;line-height:1.5}
+.xnav-seg a + a{border-left:1px solid var(--border,#dae3e0)}
+.xnav-seg a:hover{color:var(--ink,#12211f)}
+.xnav-seg a.on{background:var(--accent,#0e7c6b);color:#fff;font-weight:500}
+@media(max-width:560px){.xnav-seg{margin-left:0;width:100%}.xnav-seg a{flex:1;text-align:center}}
+
+</style>
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<div class="xnav">
+  <div class="xnav-in">
+    <a class="xnav-home" href="./">&#8592; หน้าเลือกเครื่องมือ</a>
+    <nav class="xnav-seg" aria-label="สลับเครื่องมือ">
+      <a href="./builder1.html" class="on">Builder 1 &middot; รายข้อเชิงลึก</a>
+      <a href="./builder2.html">Builder 2 &middot; ชุดตามผัง</a>
+    </nav>
+  </div>
+</div>
+
+<div class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="mark">ข</div>
+      <div class="brand-txt">
+        <h1>MCQ Prompt Builder</h1>
+        <p>เครื่องมือประกอบ prompt ออกข้อสอบปรนัย · MCQ National / ศรว.</p>
+      </div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="seg" role="group" aria-label="ระดับการตั้งค่า">
+      <button id="view-lite" aria-pressed="false">Lite</button>
+      <button id="view-full" aria-pressed="true">Full</button>
+    </div>
+    <div class="seg" role="group" aria-label="โหมดการสร้าง">
+      <button id="mode-single" aria-pressed="true">ข้อเดียว</button>
+      <button id="mode-batch" aria-pressed="false">หลายข้อ (ชุด)</button>
+    </div>
+    <button class="ghost" id="theme">โหมดสี</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="form">
+
+    <section class="card">
+      <div class="card-h"><span class="n">◆</span><h2>โหมดการทำงาน</h2></div>
+      <div class="card-b">
+        <div class="pills" id="purpose">
+          <button class="pill" data-v="generate" aria-pressed="true">สร้างข้อสอบใหม่</button>
+          <button class="pill" data-v="improve">ปรับปรุงข้อสอบเดิม</button>
+        </div>
+        <div class="field improve-only">
+          <label>ข้อสอบเดิมที่จะปรับปรุง</label>
+          <span class="hint">วางเป็นข้อความ (โจทย์ + ตัวเลือก + เฉลยถ้ามี) หรือถ้าเป็นรูป ให้เปิดสวิตช์ด้านล่าง แล้วแนบรูปข้อสอบในแชท AI เอง</span>
+          <textarea id="sourcetext" rows="5" placeholder="วางข้อสอบเดิมที่นี่ เช่น โจทย์และตัวเลือก A–E ..."></textarea>
+          <div class="swrow" style="margin-top:2px">
+            <label style="margin:0">ข้อสอบเดิมเป็นรูปภาพ (จะแนบรูปในแชท AI)</label>
+            <label class="switch"><input type="checkbox" id="sourceimg"><span class="track"></span></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><span class="n">A</span><h2>เป้าหมายและ AI ที่ใช้</h2></div>
+      <div class="card-b">
+        <div class="field">
+          <label>หัวข้อ / หัวเรื่องที่จะออก <span class="tag">#1</span></label>
+          <span class="hint">พิมพ์อิสระ — ชื่อโรค ภาวะ หรือหัวเรื่องตามตารางข้อสอบ (เลือกหมวด blueprint ในส่วน C)</span>
+          <input type="text" id="topic" placeholder="เช่น Community-acquired pneumonia">
+        </div>
+        <div class="field">
+          <label>Clinical subject / ประเด็นเฉพาะ</label>
+          <input type="text" id="subject" placeholder="เช่น empirical antibiotic ใน CAP ผู้ป่วยนอก">
+        </div>
+        <div class="grid3">
+          <div class="field">
+            <label>AI ที่จะใช้ <span class="tag">#2</span></label>
+            <select id="ai">
+              <option>Claude</option><option>ChatGPT</option><option>Gemini</option>
+              <option>Copilot</option><option>DeepSeek</option><option value="อื่น ๆ">อื่น ๆ</option>
+            </select>
+          </div>
+          <div class="field adv">
+            <label>แพ็กเกจ (Plan)</label>
+            <select id="plan"></select>
+          </div>
+          <div class="field adv">
+            <label>รุ่น (Model)</label>
+            <select id="model"></select>
+          </div>
+        </div>
+        <span class="hint adv" style="margin-top:-4px">เลือก AI → แพ็กเกจ แล้วรายการรุ่นจะปรับตามสิ่งที่แพ็กเกจนั้นเข้าถึงได้ (ข้อมูล ก.ย. 2026 · ปรับแก้เองได้เมื่อผู้ให้บริการอัปเดต)</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><span class="n">B</span><h2>รูปแบบและมาตรฐานการสอบ</h2></div>
+      <div class="card-b">
+        <div class="grid2">
+          <div class="field adv">
+            <label>รูปแบบการจัดสอบ NL2 <span class="tag">#3</span></label>
+            <div class="pills" id="nl2">
+              <button class="pill sm" data-v="แบบใหม่ (ประกาศแพทยสภา 4/2567)" aria-pressed="true">แบบใหม่</button>
+              <button class="pill sm" data-v="แบบเก่า">แบบเก่า</button>
+            </div>
+            <span class="hint" id="nl2hint"></span>
+          </div>
+          <div class="field adv">
+            <label>Style การจัดสอบ <span class="tag">#4</span></label>
+            <div class="pills" id="examstyle">
+              <button class="pill sm" data-v="NLE ขั้นตอนที่ 2" aria-pressed="true">NLE2</button>
+              <button class="pill sm" data-v="สอบลงกอง (ward/rotation)">สอบลงกอง</button>
+            </div>
+          </div>
+          <div class="field adv">
+            <label>แนวการเขียนข้อสอบ (Style) <span class="tag">#15</span></label>
+            <div class="pills" id="writestyle">
+              <button class="pill sm" data-v="ศรว." aria-pressed="true">ศรว.</button>
+              <button class="pill sm" data-v="USMLE">USMLE</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>ภาษาของข้อสอบ <span class="tag">#14</span></label>
+            <div class="pills" id="qlang">
+              <button class="pill sm" data-v="ไทย" aria-pressed="true">ไทย</button>
+              <button class="pill sm" data-v="อังกฤษ">อังกฤษ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><span class="n">C</span><h2>สาขา · Blueprint · การบูรณาการ</h2></div>
+      <div class="card-b">
+        <div class="field">
+          <label>สาขาวิชาหลัก <span class="tag">#5</span></label>
+          <div class="pills" id="spec"></div>
+        </div>
+
+        <div class="field adv">
+          <label>หมวดข้อสอบ (Blueprint ตามแบบ สพพ.) <span class="tag">#9</span></label>
+          <span class="hint">เลือกหมวดเนื้อหา I–IV แล้วเลือกหัวข้อย่อย · <a href="https://cmathai.org/news_attach/att-02-file-02.pdf" target="_blank" rel="noopener">อ้างอิงหมวดข้อสอบ ศรว.</a></span>
+          <div class="grid2">
+            <select id="domain"></select>
+            <select id="subitem"></select>
+          </div>
+        </div>
+
+        <div class="field adv">
+          <label>ภารกิจแพทย์ (Physician task) <span class="tag">#10</span></label>
+          <select id="task"></select>
+        </div>
+
+        <div class="field adv">
+          <div class="swrow">
+            <label style="margin:0">บูรณาการ Preclinical – Clinical <span class="tag">#11</span></label>
+            <label class="switch"><input type="checkbox" id="preclin"><span class="track"></span></label>
+          </div>
+          <label style="margin-top:4px">บูรณาการข้ามสาขา (เลือกได้หลายสาขา · แตะซ้ำเพื่อตั้งเป็นสาขาหลัก)</label>
+          <div class="pills" id="integ"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><span class="n">D</span><h2>ระดับความยากและโครงสร้างข้อ</h2></div>
+      <div class="card-b">
+        <div class="field">
+          <label>จำนวนข้อที่ต้องการ</label>
+          <span class="hint">ใส่ 1 = ออกทีละข้อ · มากกว่า 1 = ออกเป็นชุด (แสดงตัวเลือกการกระจายด้านล่าง)</span>
+          <input type="number" id="count" value="1" min="1" max="100" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>ระดับความยาก <span class="tag">#6</span></label>
+          <div class="pills" id="diff">
+            <button class="pill sm" data-v="Low">Low (ง่าย)</button>
+            <button class="pill sm" data-v="Medium" aria-pressed="true">Medium (ปานกลาง)</button>
+            <button class="pill sm" data-v="High">High (ยาก)</button>
+          </div>
+          <div class="mpl">
+            <span class="val">ยาก</span>
+            <div class="bar"><span class="dot" id="mpldot" style="left:50%"></span></div>
+            <span class="val">ง่าย</span>
+            <span class="val" id="mplval" style="min-width:96px;text-align:right"></span>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field adv">
+            <label>ระดับพุทธิพิสัย (Bloom) <span class="tag">#7</span></label>
+            <select id="bloom">
+              <option value="Remember">Remember (จำ)</option>
+              <option value="Understand">Understand (เข้าใจ)</option>
+              <option value="Apply" selected>Apply (ประยุกต์)</option>
+              <option value="Analysis">Analysis (วิเคราะห์)</option>
+            </select>
+            <span class="hint" id="taxhint"></span>
+          </div>
+          <div class="field">
+            <label>โจทย์เป็น Clinical vignette <span class="tag">#8</span></label>
+            <div class="pills" id="vignette">
+              <button class="pill sm" data-v="yes" aria-pressed="true">ใช่</button>
+              <button class="pill sm" data-v="no">ไม่ใช่</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>จำนวนตัวเลือก <span class="tag">#12</span></label>
+            <div class="pills" id="nopt">
+              <button class="pill sm" data-v="4">4 ตัวเลือก</button>
+              <button class="pill sm" data-v="5" aria-pressed="true">5 ตัวเลือก</button>
+            </div>
+          </div>
+          <div class="field adv">
+            <label>รูปแบบป้ายตัวเลือก</label>
+            <div class="pills" id="optlabel">
+              <button class="pill sm" data-v="ABC" aria-pressed="true">A B C D E</button>
+              <button class="pill sm" data-v="123">1 2 3 4 5</button>
+            </div>
+          </div>
+          <div class="field adv">
+            <label>ลักษณะของโจทย์ <span class="tag">#13</span></label>
+            <div class="pills" id="qtype">
+              <button class="pill sm" data-v="one best answer" aria-pressed="true">One best answer</button>
+              <button class="pill sm" data-v="general">General</button>
+            </div>
+          </div>
+          <div class="field adv">
+            <label>ความยาวของโจทย์ (Stem)</label>
+            <div class="pills" id="stemlen">
+              <button class="pill sm" data-v="short">สั้น</button>
+              <button class="pill sm" data-v="medium" aria-pressed="true">ปานกลาง</button>
+              <button class="pill sm" data-v="long">ยาว</button>
+            </div>
+          </div>
+          <div class="field adv">
+            <label>ความยาวของตัวเลือก</label>
+            <div class="pills" id="optlen">
+              <button class="pill sm" data-v="short">สั้น</button>
+              <button class="pill sm" data-v="medium" aria-pressed="true">ปานกลาง</button>
+              <button class="pill sm" data-v="long">ยาว</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h"><span class="n">E</span><h2>เฉลย คำอธิบาย และรูปแบบผลลัพธ์</h2></div>
+      <div class="card-b">
+        <div class="field">
+          <label>รูปแบบผลลัพธ์ที่ต้องการ</label>
+          <span class="hint">ให้ AI ส่งมอบข้อสอบในรูปแบบใด</span>
+          <div class="pills" id="outfmt">
+            <button class="pill sm" data-v="chat" aria-pressed="true">ตอบผ่าน Chat</button>
+            <button class="pill sm" data-v="doc">Document</button>
+            <button class="pill sm" data-v="pdf">PDF</button>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>ภาษาของเฉลย/คำอธิบาย <span class="tag">#16</span></label>
+            <div class="pills" id="keylang">
+              <button class="pill sm" data-v="ไทย" aria-pressed="true">ไทย</button>
+              <button class="pill sm" data-v="อังกฤษ">อังกฤษ</button>
+            </div>
+          </div>
+          <div class="field adv">
+            <label>ขอบเขตการอธิบายตัวเลือก <span class="tag">#17</span></label>
+            <select id="keyscope">
+              <option value="all">อธิบายทุกตัวเลือก</option>
+              <option value="wrong">เฉพาะข้อที่ผิด (ทำไมเป็นตัวลวง)</option>
+              <option value="right">เฉพาะข้อที่ถูก</option>
+            </select>
+          </div>
+        </div>
+        <div class="field adv">
+          <div class="swrow">
+            <label style="margin:0">แนบเกณฑ์ให้คะแนนตัวลวง + คำนวณ AI / MPL</label>
+            <label class="switch"><input type="checkbox" id="aiindex" checked><span class="track"></span></label>
+          </div>
+          <span class="hint">ให้ AI ลงคะแนนตัวลวง (0 / 0.5 / 1.0 / 1.5 / 2.0) และคำนวณค่า Acceptable Index ตามคู่มือออกข้อสอบ</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card batch-only" style="flex-direction:column">
+      <div class="card-h"><span class="n">∑</span><h2>ตั้งค่าชุดข้อสอบ (<span id="batchn">1</span> ข้อ)</h2></div>
+      <div class="card-b">
+        <div class="field adv">
+          <label>การกระจาย spec ในชุด</label>
+          <select id="distribute">
+            <option value="fixed">ใช้ค่าที่เลือกไว้เหมือนกันทุกข้อ</option>
+            <option value="vary" selected>กระจายให้หลากหลาย (Bloom / หมวด / ความยาก)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>คำสั่งเพิ่มเติมสำหรับทั้งชุด (ถ้ามี)</label>
+          <textarea id="batchnote" placeholder="เช่น ห้ามซ้ำโรคเดิม, ให้ครอบคลุมทั้ง out-patient และ in-patient"></textarea>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div>
+    <div class="previewwrap">
+      <div class="pv-h">
+        <div class="pv-dots"><span></span><span></span><span></span></div>
+        <span class="pv-title">prompt.txt</span>
+        <span class="pv-meta" id="pvmeta">ไทย · 1 ข้อ</span>
+      </div>
+      <div class="pv-body"><pre id="preview"></pre></div>
+      <div class="pv-foot">
+        <button class="btn primary" id="copy">คัดลอก prompt</button>
+        <button class="btn line" id="openai">เปิด AI</button>
+        <div class="spacer"></div>
+        <span class="cnt" id="charcnt"></span>
+        <div class="seg" style="background:var(--preview-panel);border-color:var(--preview-border)">
+          <button id="plang-th" aria-pressed="true" style="color:var(--preview-ink);font-size:12px;padding:5px 11px">TH</button>
+          <button id="plang-en" aria-pressed="false" style="color:var(--preview-muted);font-size:12px;padding:5px 11px">EN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <b>ที่มา:</b> โครงสร้าง blueprint I–IV และรูปแบบเฉลยอ้างอิงจากแบบออกข้อสอบประมวลความรู้ขั้นที่ 2 (สพพ.) · เกณฑ์ One-best-answer, การหลีกเลี่ยง negative form, หน่วย metric, และการคำนวณ Acceptable Index / MPL อ้างอิงจากคู่มือแนะนำการออกข้อสอบปรนัย · หมวดข้อสอบ 250 ข้อ ตามประกาศแพทยสภา 4/2567 (ศรว.) &nbsp;— &nbsp;prompt ที่สร้างเป็นเพียงคำสั่งตั้งต้น อาจารย์ควรตรวจทานความถูกต้องทางคลินิกและความตรงตาม blueprint ของข้อสอบที่ AI สร้างทุกครั้ง
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $=(s)=>document.querySelector(s), $$=(s)=>document.querySelectorAll(s);
+
+const SPECIALTIES=[
+ ["Med","อายุรศาสตร์"],["Ped","กุมารเวชศาสตร์"],["Sur","ศัลยศาสตร์"],["ObGyn","สูติ-นรีเวช"],
+ ["Ortho","ออร์โธปิดิกส์"],["Eye","จักษุ"],["ENT","โสต ศอ นาสิก"],["ER","เวชศาสตร์ฉุกเฉิน"],
+ ["Anes","วิสัญญี"],["Radio","รังสีวิทยา"],["Foren","นิติเวช"],["Rehab","เวชศาสตร์ฟื้นฟู"],
+ ["FM/Occ","เวชศาสตร์ครอบครัว/อาชีวเวช"],["Other","อื่น ๆ"]
+];
+const DOMAINS={
+ "I. Health & Health Maintenance":["Risk factors","Epidemiology","Prevention","Screening","Normal growth & development","Community","Nutrition & feeding","Ethics & jurisprudence","Counseling & guidance","General care","Psycho-social/economic/cultural factors","Health promotion"],
+ "II. Mechanisms of Disease":["Etiology / causation","Natural history","Pathogenesis","Pathophysiology","Associated findings","Complication","Therapeutic effect","Severity of illness","Clinical course / prognosis"],
+ "III. Diagnosis":["Data interpretation","Investigation","Differential diagnosis / Diagnosis"],
+ "IV. Management & Treatment":["Emergency","Acute","Long-term"]
+};
+const TASKS=[
+ "Diagnosis & differential diagnosis",
+ "Laboratory & diagnostic studies",
+ "Treatment (pharmacotherapy / clinical intervention)",
+ "Pathophysiology / pathogenesis / mechanism of disease",
+ "Prognosis / risk factors / outcome"
+];
+const MPL={Low:{r:"0.6–0.7",ai:"AI ≥ 0.6",pos:"84%"},Medium:{r:"0.4–0.6",ai:"AI 0.4–0.6",pos:"50%"},High:{r:"0.3–0.4",ai:"AI < 0.4",pos:"16%"}};
+const AIS={
+ "Claude":{plans:["Free","Pro","Max","Team","Enterprise"],models:{
+   Free:["Claude Sonnet 5","Claude Haiku 4.5"],
+   Pro:["Claude Sonnet 5","Claude Opus 5","Claude Haiku 4.5"],
+   Max:["Claude Opus 5","Claude Sonnet 5","Claude Haiku 4.5","Claude Fable 5"],
+   Team:["Claude Sonnet 5","Claude Opus 5","Claude Haiku 4.5"],
+   Enterprise:["Claude Opus 5","Claude Sonnet 5","Claude Haiku 4.5","Claude Fable 5"]}},
+ "ChatGPT":{plans:["Free","Go","Plus","Pro","Business","Enterprise"],models:{
+   Free:["GPT-5.5 Instant","GPT-5.5 mini"],
+   Go:["GPT-5.5 Instant","GPT-5.5 Thinking","GPT-5.5 mini"],
+   Plus:["GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3","GPT-5.5 mini"],
+   Pro:["GPT-5.5 Pro","GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3"],
+   Business:["GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3"],
+   Enterprise:["GPT-5.5 Pro","GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3"]}},
+ "Gemini":{plans:["Free","Google AI Plus","Google AI Pro","Google AI Ultra"],models:{
+   "Free":["Gemini 3 Flash","Gemini 3.1 Flash-Lite"],
+   "Google AI Plus":["Gemini 3.1 Pro","Gemini 3 Flash"],
+   "Google AI Pro":["Gemini 3.1 Pro","Gemini 3 Flash","Gemini 3.1 Flash-Lite"],
+   "Google AI Ultra":["Gemini 3.1 Pro","Deep Think (Ultra)","Gemini 3 Flash"]}},
+ "Copilot":{plans:["Free","Copilot Pro","Microsoft 365 Copilot"],models:{
+   "Free":["Smart (auto)","Quick response"],
+   "Copilot Pro":["Think Deeper (GPT-5)","Smart (auto)"],
+   "Microsoft 365 Copilot":["Think Deeper (GPT-5)","Smart (auto)"]}},
+ "DeepSeek":{plans:["Free (เว็บ)","API"],models:{
+   "Free (เว็บ)":["DeepSeek-V3.2","DeepSeek-R1 (reasoning)"],
+   "API":["DeepSeek-V3.2","DeepSeek-R1 (reasoning)"]}},
+ "อื่น ๆ":{plans:["Free","แบบเสียเงิน"],models:{
+   "Free":["ไม่ระบุรุ่น"],"แบบเสียเงิน":["ไม่ระบุรุ่น"]}}
+};
+const FREE_PLANS=["Free","Free (เว็บ)"];
+
+const S={
+ topic:"",subject:"",ai:"Claude",model:"Claude Opus 5",plan:"Pro",
+ nl2:"แบบใหม่ (ประกาศแพทยสภา 4/2567)",examstyle:"NLE ขั้นตอนที่ 2",writestyle:"ศรว.",qlang:"ไทย",
+ spec:"Med",domain:"II. Mechanisms of Disease",subitem:"Pathophysiology",task:TASKS[3],
+ preclin:false,integ:{}, diff:"Medium",bloom:"Apply",vignette:"yes",nopt:"5",qtype:"one best answer",
+ keylang:"ไทย",keyscope:"all",aiindex:true,optlabel:"ABC",outfmt:"chat",stemlen:"medium",optlen:"medium",
+ count:1,distribute:"vary",batchnote:"",plang:"th",purpose:"generate",sourcetext:"",sourceimg:false
+};
+const isBatch=()=>S.count>1;
+function optLabels(){const n=+S.nopt;const seq=S.optlabel==="123"?["1","2","3","4","5"]:["A","B","C","D","E"];return seq.slice(0,n);}
+function optRange(){const l=optLabels();return l[0]+"–"+l[l.length-1];}
+function optLine(){return optLabels().map(l=>l+". ...").join(" ");}
+
+SPECIALTIES.forEach(([v,l])=>{
+ const b=document.createElement("button");b.className="pill sm";b.dataset.v=v;b.textContent=v+" · "+l;
+ b.setAttribute("aria-pressed",v===S.spec?"true":"false");$("#spec").appendChild(b);
+});
+SPECIALTIES.forEach(([v,l])=>{
+ const b=document.createElement("button");b.className="chip";b.dataset.v=v;
+ b.innerHTML='<span>'+v+'</span>';$("#integ").appendChild(b);
+});
+Object.keys(DOMAINS).forEach(d=>{const o=document.createElement("option");o.value=d;o.textContent=d;$("#domain").appendChild(o);});
+$("#domain").value=S.domain;
+function fillSub(){const sel=$("#subitem");sel.innerHTML="";DOMAINS[S.domain].forEach(it=>{const o=document.createElement("option");o.value=it;o.textContent=it;sel.appendChild(o);});sel.value=DOMAINS[S.domain].includes(S.subitem)?S.subitem:DOMAINS[S.domain][0];S.subitem=sel.value;}
+fillSub();
+TASKS.forEach(t=>{const o=document.createElement("option");o.value=t;o.textContent=t;$("#task").appendChild(o);});
+$("#task").value=S.task;
+
+function fillSelect(sel,items,keep){sel.innerHTML="";items.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o);});const val=items.includes(keep)?keep:items[0];sel.value=val;return val;}
+function fillModels(preserve){const cfg=AIS[S.ai]||AIS["อื่น ๆ"];const list=cfg.models[S.plan]||cfg.models[cfg.plans[0]];
+ S.model=fillSelect($("#model"),list,preserve?S.model:list[0]);}
+function fillAI(preserve){const cfg=AIS[S.ai]||AIS["อื่น ๆ"];
+ S.plan=fillSelect($("#plan"),cfg.plans,preserve?S.plan:cfg.plans[0]);
+ fillModels(preserve);}
+fillAI(true);
+
+function bindPills(id,key,after){
+ $(id).addEventListener("click",e=>{const b=e.target.closest(".pill");if(!b)return;
+   $(id).querySelectorAll(".pill").forEach(p=>p.setAttribute("aria-pressed","false"));
+   b.setAttribute("aria-pressed","true");S[key]=b.dataset.v;if(after)after();render();});
+}
+bindPills("#nl2","nl2",()=>{
+ $("#nl2hint").textContent=S.nl2.startsWith("แบบใหม่")?"250 ข้อ · หมวด 1 (30) + หมวด 2 ระบบต่าง ๆ (220)":"ตาม Table of Specification เดิมของกอง/สถาบัน";
+});
+bindPills("#examstyle","examstyle");bindPills("#writestyle","writestyle");bindPills("#qlang","qlang");
+bindPills("#spec","spec");bindPills("#vignette","vignette");bindPills("#nopt","nopt");bindPills("#qtype","qtype");
+bindPills("#keylang","keylang");
+bindPills("#optlabel","optlabel");
+bindPills("#outfmt","outfmt");
+bindPills("#stemlen","stemlen");bindPills("#optlen","optlen");
+bindPills("#diff","diff",updateMPL);
+
+$("#integ").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const v=b.dataset.v;
+ if(!S.integ[v]){S.integ[v]="sec";}
+ else if(S.integ[v]==="sec"){Object.keys(S.integ).forEach(k=>{if(S.integ[k]==="pri")S.integ[k]="sec";});S.integ[v]="pri";}
+ else{delete S.integ[v];}
+ $("#integ").querySelectorAll(".chip").forEach(c=>{const k=c.dataset.v;
+   if(S.integ[k]){c.setAttribute("aria-pressed","true");c.innerHTML='<span>'+k+'</span>'+(S.integ[k]==="pri"?'<span class="pri">หลัก</span>':'');}
+   else{c.setAttribute("aria-pressed","false");c.innerHTML='<span>'+k+'</span>';}
+ });render();
+});
+
+$("#topic").addEventListener("input",e=>{S.topic=e.target.value;render();});
+$("#subject").addEventListener("input",e=>{S.subject=e.target.value;render();});
+$("#ai").addEventListener("change",e=>{S.ai=e.target.value;fillAI(false);render();});
+$("#model").addEventListener("change",e=>{S.model=e.target.value;render();});
+$("#plan").addEventListener("change",e=>{S.plan=e.target.value;fillModels(false);render();});
+$("#domain").addEventListener("change",e=>{S.domain=e.target.value;fillSub();render();});
+$("#subitem").addEventListener("change",e=>{S.subitem=e.target.value;render();});
+$("#task").addEventListener("change",e=>{S.task=e.target.value;render();});
+$("#bloom").addEventListener("change",e=>{S.bloom=e.target.value;updateTax();render();});
+$("#keyscope").addEventListener("change",e=>{S.keyscope=e.target.value;render();});
+$("#preclin").addEventListener("change",e=>{S.preclin=e.target.checked;render();});
+$("#aiindex").addEventListener("change",e=>{S.aiindex=e.target.checked;render();});
+$("#count").addEventListener("input",e=>{S.count=Math.max(1,Math.min(100,Math.floor(+e.target.value||1)));syncMode();render();});
+$("#count").addEventListener("blur",e=>{e.target.value=S.count;});
+$("#distribute").addEventListener("change",e=>{S.distribute=e.target.value;render();});
+$("#batchnote").addEventListener("input",e=>{S.batchnote=e.target.value;render();});
+$("#purpose").addEventListener("click",e=>{const b=e.target.closest(".pill");if(!b)return;
+ $("#purpose").querySelectorAll(".pill").forEach(p=>p.setAttribute("aria-pressed","false"));
+ b.setAttribute("aria-pressed","true");S.purpose=b.dataset.v;document.body.dataset.purpose=S.purpose;render();});
+$("#sourcetext").addEventListener("input",e=>{S.sourcetext=e.target.value;render();});
+$("#sourceimg").addEventListener("change",e=>{S.sourceimg=e.target.checked;render();});
+document.body.dataset.purpose="generate";
+
+function updateMPL(){const m=MPL[S.diff];$("#mpldot").style.left=m.pos;$("#mplval").textContent="MPL "+m.r+" · "+m.ai;}
+function updateTax(){const recall=(S.bloom==="Remember"||S.bloom==="Understand");
+ $("#taxhint").textContent="Taxonomy (สพพ.): "+(recall?"Recall of knowledge":"Application of knowledge");}
+updateMPL();updateTax();
+$("#nl2hint").textContent="250 ข้อ · หมวด 1 (30) + หมวด 2 ระบบต่าง ๆ (220)";
+
+function syncMode(){const b=isBatch();document.body.dataset.mode=b?"batch":"single";
+ $("#mode-single").setAttribute("aria-pressed",!b);
+ $("#mode-batch").setAttribute("aria-pressed",b);
+ $("#batchn").textContent=S.count;}
+$("#mode-single").onclick=()=>{S.count=1;$("#count").value=1;syncMode();render();};
+$("#mode-batch").onclick=()=>{if(S.count<2){S.count=10;$("#count").value=10;}syncMode();render();};
+syncMode();
+
+function setView(v){document.body.dataset.view=v;
+ $("#view-lite").setAttribute("aria-pressed",v==="lite");
+ $("#view-full").setAttribute("aria-pressed",v==="full");}
+$("#view-lite").onclick=()=>setView("lite");
+$("#view-full").onclick=()=>setView("full");
+document.body.dataset.view="full";
+
+function setPlang(l){S.plang=l;$("#plang-th").setAttribute("aria-pressed",l==="th");$("#plang-en").setAttribute("aria-pressed",l==="en");
+ $("#plang-th").style.color=l==="th"?"var(--preview-ink)":"var(--preview-muted)";
+ $("#plang-en").style.color=l==="en"?"var(--preview-ink)":"var(--preview-muted)";render();}
+$("#plang-th").onclick=()=>setPlang("th");
+$("#plang-en").onclick=()=>setPlang("en");
+
+$("#theme").onclick=()=>{const cur=document.documentElement.getAttribute("data-theme");
+ const next=cur==="dark"?"light":(cur==="light"?"dark":(matchMedia("(prefers-color-scheme:dark)").matches?"light":"dark"));
+ document.documentElement.setAttribute("data-theme",next);};
+
+function integList(){
+ const pri=Object.keys(S.integ).filter(k=>S.integ[k]==="pri");
+ const sec=Object.keys(S.integ).filter(k=>S.integ[k]==="sec");
+ if(!pri.length&&!sec.length)return null;
+ return {pri:pri[0]||S.spec,others:sec.filter(x=>x!==(pri[0]||S.spec))};
+}
+function diffText(l){const m=MPL[S.diff];
+ const th={Low:"ง่าย",Medium:"ปานกลาง",High:"ยาก"}[S.diff];
+ return l==="th"?`${S.diff} (${th}) — เป้าหมาย MPL ${m.r} (${m.ai})`:`${S.diff} — target MPL ${m.r} (${m.ai})`;
+}
+function taxonomy(){return (S.bloom==="Remember"||S.bloom==="Understand")?"Recall of knowledge":"Application of knowledge";}
+function lenTH(v){return {short:"สั้น กระชับ",medium:"ปานกลาง",long:"ยาว ให้รายละเอียดมาก"}[v];}
+function lenEN(v){return {short:"short / concise",medium:"medium",long:"long / detailed"}[v];}
+function sourceBlockTH(){const L=[];
+ L.push(`# ข้อสอบเดิมที่ต้องปรับปรุง`);
+ if(S.sourceimg)L.push(`ข้อสอบเดิมแนบมาเป็น "รูปภาพ" ในแชทนี้ — ให้อ่าน/ถอดข้อความจากรูปก่อน แล้วจึงปรับปรุง${S.sourcetext?" (มีข้อความประกอบเพิ่มเติมด้านล่าง)":""}`);
+ if(S.sourcetext)L.push("```\n"+S.sourcetext+"\n```");
+ if(!S.sourceimg&&!S.sourcetext)L.push(`(ยังไม่ได้ใส่ข้อสอบเดิม — วางข้อความในเครื่องมือ หรือเปิดสวิตช์ "เป็นรูปภาพ" แล้วแนบรูปในแชท)`);
+ return L;}
+function sourceBlockEN(){const L=[];
+ L.push(`# ORIGINAL ITEM(S) TO IMPROVE`);
+ if(S.sourceimg)L.push(`The original item(s) are attached as an IMAGE in this chat — read/transcribe the image first, then improve${S.sourcetext?" (additional text is provided below)":""}.`);
+ if(S.sourcetext)L.push("```\n"+S.sourcetext+"\n```");
+ if(!S.sourceimg&&!S.sourcetext)L.push(`(No original item provided yet — paste text in the tool, or toggle "image" and attach it in the chat.)`);
+ return L;}
+
+function buildTH(){
+ const L=[];
+ const many=isBatch();
+ const n=S.count;
+ L.push(`# บทบาท`);
+ L.push(`คุณคืออาจารย์แพทย์ผู้เชี่ยวชาญด้านการออกข้อสอบปรนัย (item writer) ระดับชาติ สำหรับการสอบ ${S.examstyle} แนว ${S.writestyle} (${S.nl2})`);
+ if(S.purpose==="improve")L.push(`ภารกิจ: ปรับปรุงข้อสอบเดิม${many?`ทั้ง ${n} ข้อ`:``}ที่ยังไม่สมบูรณ์ให้ได้คุณภาพระดับสอบใบประกอบวิชาชีพ ตามข้อกำหนดและกติกาด้านล่าง โดยคงเจตนา/โรค/ประเด็นเดิมไว้เท่าที่เหมาะสม แก้เฉพาะจุดที่ทำให้ไม่ได้มาตรฐาน`);
+ else L.push(`ภารกิจ: สร้างข้อสอบ MCQ ${many?`จำนวน ${n} ข้อ`:`จำนวน 1 ข้อ`} ที่มีคุณภาพระดับสอบใบประกอบวิชาชีพ ตามข้อกำหนดและกติกาด้านล่างอย่างเคร่งครัด`);
+ L.push(`บริบทการใช้งาน: prompt นี้จัดทำเพื่อใช้กับ ${S.ai} รุ่น ${S.model} (แพ็กเกจ ${S.plan})`);
+ L.push(``);
+ if(S.purpose==="improve"){sourceBlockTH().forEach(x=>L.push(x));L.push(``);}
+ L.push(`# ข้อกำหนดของข้อสอบ (Specification)${S.purpose==="improve"?" — เป้าหมายหลังปรับปรุง":""}`);
+ L.push(`- สาขาวิชาหลัก: ${S.spec}`);
+ const ig=integList();
+ if(ig){L.push(`- บูรณาการข้ามสาขา: สาขาหลัก = ${ig.pri}${ig.others.length?` ; ร่วมกับ ${ig.others.join(", ")}`:""} (เชื่อมโยงเนื้อหาให้เป็นข้อเดียวกัน ไม่ใช่ถามแยกส่วน)`);}
+ if(S.preclin)L.push(`- บูรณาการ Preclinical–Clinical: เชื่อมความรู้ปรีคลินิก (กายวิภาค/สรีรวิทยา/ชีวเคมี/พยาธิ) เข้ากับสถานการณ์คลินิก`);
+ L.push(`- หัวข้อ/หัวเรื่อง: ${S.topic||(S.purpose==="improve"?"(คงหัวข้อ/โรคเดิมจากข้อสอบที่ให้มา เว้นแต่ผิดจนต้องเปลี่ยน)":"(อาจารย์ยังไม่ระบุ — ให้เลือกหัวข้อที่เหมาะสมภายในหมวดด้านล่าง)")}`);
+ if(S.subject)L.push(`- ประเด็นเฉพาะ (clinical subject): ${S.subject}`);
+ L.push(`- หมวดข้อสอบ (blueprint): ${S.domain} → ${S.subitem}`);
+ L.push(`- ภารกิจแพทย์ (physician task): ${S.task}`);
+ L.push(`- ระดับพุทธิพิสัย (Bloom): ${S.bloom} → Taxonomy สพพ. = ${taxonomy()}`);
+ L.push(`- ระดับความยาก: ${diffText("th")}`);
+ L.push(`- โจทย์เป็น clinical vignette: ${S.vignette==="yes"?"ใช่ — ให้มีสถานการณ์ผู้ป่วยที่สมจริง":"ไม่ใช่ — เป็นคำถามความรู้ตรง ๆ"}`);
+ L.push(`- ลักษณะโจทย์: ${S.qtype}`);
+ L.push(`- ความยาวของโจทย์ (stem): ${lenTH(S.stemlen)}`);
+ L.push(`- ความยาวของตัวเลือก: ${lenTH(S.optlen)}`);
+ L.push(`- จำนวนตัวเลือก: ${S.nopt} ตัวเลือก · ป้ายกำกับ ${optRange()}`);
+ L.push(`- ภาษาของข้อสอบ (โจทย์+ตัวเลือก): ${S.qlang}`);
+ L.push(`- ภาษาของเฉลย/คำอธิบาย: ${S.keylang}`);
+ L.push(``);
+ L.push(`# กติกาการออกข้อสอบ (ต้องปฏิบัติตามทุกข้อ)`);
+ L.push(`1. เป็นข้อสอบแบบ one-best-answer มีคำตอบที่ถูกที่สุดเพียงข้อเดียว`);
+ L.push(`2. ตัวเลือกทั้ง ${S.nopt} ข้อต้องเป็นเนื้อเดียวกัน (homogeneous) เช่น ถ้าถามการรักษาให้ทุกตัวเลือกเป็นการรักษา และมีความยาวใกล้เคียงกัน`);
+ L.push(`3. ห้ามใช้ข้อสอบเชิงลบ (negative form) เช่น "ข้อใดไม่ใช่", "ยกเว้น", และห้ามตัวเลือก "ถูกทุกข้อ/ผิดทุกข้อ"`);
+ L.push(`4. หลีกเลี่ยงโจทย์สั้นแต่คำตอบยาว ตัวลวงต้องมีเหตุผลน่าเชื่อ (plausible) ไม่ใช่ตัวเลือกทิ้ง`);
+ L.push(`5. ใช้หน่วยระบบ metric และคำย่อ/ค่าปกติทางห้องปฏิบัติการที่เป็นสากล`);
+ if(S.vignette==="yes")L.push(`6. Vignette ระบุข้อมูลที่จำเป็นครบ (อายุ เพศ อาการนำ ระยะเวลา ตรวจร่างกาย/แลบที่เกี่ยวข้อง) และตอบได้โดยไม่ต้องเดาข้อมูลนอกโจทย์`);
+ L.push(`${S.vignette==="yes"?"7":"6"}. คำถามนำ (lead-in) ต้องชัดเจน ตอบได้แม้ปิดตัวเลือก (cover-the-options test)`);
+ L.push(`${S.vignette==="yes"?"8":"7"}. เนื้อหาถูกต้องตามหลักฐานเชิงประจักษ์/แนวทางเวชปฏิบัติปัจจุบัน และเหมาะกับบริบทการแพทย์ไทย`);
+ if(S.writestyle==="USMLE")L.push(`${S.vignette==="yes"?"9":"8"}. จัดรูปแบบตามแนว USMLE: vignette นำด้วยข้อมูลผู้ป่วย ตามด้วยผลตรวจ แล้วจบด้วย lead-in เดียว`);
+ if(S.purpose==="improve"){
+   L.push(``);
+   L.push(`# วิธีปรับปรุง`);
+   L.push(`1. วิเคราะห์ข้อบกพร่องของข้อเดิมทีละประเด็น (โครงสร้าง โจทย์ ตัวเลือก เฉลย และความถูกต้องทางคลินิก)`);
+   L.push(`2. แก้ให้ตรงกติกาข้างต้นทุกข้อ โดยคงโรค/ประเด็น/ระดับความยากเดิมไว้เท่าที่เหมาะสม`);
+   L.push(`3. ถ้าข้อมูลในโจทย์เดิมไม่พอจะตอบได้ ให้เติมข้อมูลที่จำเป็นอย่างสมเหตุผล และระบุว่าเป็นส่วนที่เติม`);
+   L.push(`4. ถ้าเฉลยเดิมผิดหรือมีคำตอบถูกมากกว่าหนึ่ง ให้แก้ไขและอธิบายเหตุผล`);
+ }
+ L.push(``);
+ L.push(`# รูปแบบผลลัพธ์ที่ต้องการ`);
+ L.push(deliveryTH());
+ L.push(`โครงสร้างแต่ละข้อ ให้แสดงตามหัวข้อนี้:`);
+ L.push(`- **โจทย์ (Stem):** ...`);
+ L.push(`- **ตัวเลือก:** ${optLine()}`);
+ L.push(`- **เฉลย (Answer):** ระบุ${S.optlabel==="123"?"หมายเลข":"ตัวอักษร"}ของคำตอบ`);
+ L.push(`- **Keyword:** คำสำคัญที่ชี้คำตอบ`);
+ L.push(`- **คำอธิบาย:** ${scopeTH()}`);
+ L.push(`- **Blueprint tag:** ${S.domain} → ${S.subitem} | ${S.task} | ${taxonomy()} | ${S.spec}`);
+ L.push(`- **เอกสารอ้างอิง:** ระบุแหล่งอ้างอิงของคำตอบ (ตำรา/แนวทางเวชปฏิบัติ)`);
+ if(S.purpose==="improve")L.push(`- **สิ่งที่ปรับปรุง (changelog):** สรุปเป็นข้อ ๆ ว่าแก้อะไรจากของเดิมและเพราะอะไร (เช่น แก้ negative stem, ทำตัวเลือกให้ homogeneous, เติมข้อมูลใน vignette, แก้เฉลย/ตัวลวง)`);
+ if(S.aiindex){
+   L.push(``);
+   L.push(`# เกณฑ์ให้คะแนนตัวลวงและการคำนวณ Acceptable Index (AI)`);
+   L.push(`หลังจากออกข้อแล้ว ให้ประเมินแต่ละตัวเลือกและคำนวณ ดังนี้:`);
+   L.push(`- คำตอบที่ถูก = 2 คะแนน`);
+   L.push(`- ตัวลวงให้คะแนนตามความใกล้เคียงกับคำตอบ: 0 (แยกออกชัดเจน), 0.5 (ใกล้เคียงน้อย), 1.0 (ปานกลาง), 1.5 (ใกล้เคียงมาก) — ใช้เฉพาะค่า 0/0.5/1.0/1.5/2.0`);
+   L.push(`- คำนวณ AI = 2 ÷ (ผลรวมคะแนนทั้ง ${S.nopt} ตัวเลือก)`);
+   L.push(`- แปลผล: AI < 0.4 = ยาก, 0.4–0.6 = ปานกลาง, ≥ 0.6 = ง่าย`);
+   L.push(`- แสดงตารางคะแนนรายตัวเลือก ค่า AI และระบุว่าตรงกับระดับความยากที่ต้องการ (${S.diff}) หรือไม่`);
+ }
+ if(isBatch()){
+   L.push(``);
+   L.push(`# คำสั่งสำหรับทั้งชุด (${n} ข้อ)`);
+   L.push(`- สร้างทั้งหมด ${n} ข้อ เรียงลำดับ ข้อที่ 1–${n}`);
+   L.push(S.distribute==="vary"
+     ? `- กระจายความหลากหลาย: ให้ครอบคลุมหลายหัวข้อย่อยในหมวด "${S.domain}" หลายระดับ Bloom และหลายระดับความยาก โดยยังคงอยู่ในสาขา ${S.spec} และภารกิจ/blueprint ที่กำหนด — ห้ามออกโรค/ประเด็นซ้ำกัน`
+     : `- ใช้ค่า specification เดียวกันทุกข้อตามที่กำหนดด้านบน แต่เปลี่ยนสถานการณ์/ผู้ป่วยไม่ให้ซ้ำ`);
+   if(S.aiindex)L.push(`- สรุปตารางรวมท้ายชุด: หมายเลขข้อ | หมวด blueprint | Bloom | ค่า AI | ระดับความยาก แล้วคำนวณ MPL รวมของทั้งชุด = (ผลรวมค่า AI ÷ ${n}) × 100`);
+   if(S.batchnote)L.push(`- ข้อกำหนดเพิ่มเติมจากอาจารย์: ${S.batchnote}`);
+ }
+ if(S.ai==="อื่น ๆ"||FREE_PLANS.includes(S.plan)){
+   L.push(``);L.push(`# หมายเหตุ`);
+   L.push(`หากบริบท/โควตาจำกัด (แพ็กเกจ ${S.plan}) ให้ทยอยออกทีละข้อและคงคุณภาพตามกติกาข้างต้นเสมอ`);
+ }
+ return L.join("\n");
+}
+function deliveryTH(){
+ if(S.outfmt==="doc")return "การส่งมอบ: จัดผลลัพธ์เป็นเอกสาร (Word/Document) ที่ดาวน์โหลดได้ มีหัวเรื่อง เลขข้อ และตารางเฉลย/คำอธิบาย จัดหน้าให้พร้อมพิมพ์ — หากเครื่องมือสร้างไฟล์ไม่ได้ ให้จัดเป็นข้อความที่คัดลอกไปวางใน Word ได้ทันที";
+ if(S.outfmt==="pdf")return "การส่งมอบ: จัดผลลัพธ์เป็นไฟล์ PDF ที่ดาวน์โหลดได้ จัดหน้าเรียบร้อย แยกส่วนโจทย์และเฉลยชัดเจน — หากเครื่องมือสร้างไฟล์ไม่ได้ ให้จัดเป็นข้อความที่พร้อมแปลงเป็น PDF";
+ return "การส่งมอบ: ตอบกลับในแชทนี้โดยตรง";
+}
+function deliveryEN(){
+ if(S.outfmt==="doc")return "Delivery: produce a downloadable Word/Document with headings, item numbers, and an answer/explanation table, print-ready. If file creation is unavailable, format as text ready to paste into Word.";
+ if(S.outfmt==="pdf")return "Delivery: produce a downloadable, well-formatted PDF with the questions and answer key clearly separated. If file creation is unavailable, format as text ready to export to PDF.";
+ return "Delivery: reply directly in this chat.";
+}
+function scopeTH(){
+ if(S.keyscope==="all")return "อธิบายเหตุผลของทุกตัวเลือก ทั้งข้อที่ถูกและเหตุผลที่แต่ละตัวลวงผิด";
+ if(S.keyscope==="wrong")return "อธิบายเฉพาะว่าแต่ละตัวลวงผิดเพราะอะไร (เหตุผลที่ไม่ใช่คำตอบ)";
+ return "อธิบายเฉพาะเหตุผลว่าทำไมข้อที่ถูกจึงเป็นคำตอบที่ดีที่สุด";
+}
+
+function buildEN(){
+ const L=[];const many=isBatch();const n=S.count;
+ L.push(`# ROLE`);
+ L.push(`You are an expert medical faculty item-writer for the ${S.examstyle} exam, ${S.writestyle} style (${S.nl2}).`);
+ if(S.purpose==="improve")L.push(`Task: improve ${many?`the ${n} incomplete items`:`the incomplete item`} to national-licensing quality, following every specification and rule below, preserving the original intent/disease/topic where appropriate and changing only what fails the standard.`);
+ else L.push(`Task: write ${many?`${n} MCQs`:`1 MCQ`} of national-licensing quality, following every specification and rule below.`);
+ L.push(`Context: this prompt is intended for ${S.ai} — ${S.model} (${S.plan} plan).`);
+ L.push(``);
+ if(S.purpose==="improve"){sourceBlockEN().forEach(x=>L.push(x));L.push(``);}
+ L.push(`# ITEM SPECIFICATION${S.purpose==="improve"?" — target after improvement":""}`);
+ L.push(`- Primary specialty: ${S.spec}`);
+ const ig=integList();
+ if(ig)L.push(`- Cross-discipline integration: primary = ${ig.pri}${ig.others.length?`; with ${ig.others.join(", ")}`:""} (integrate into ONE item, not separate sub-questions)`);
+ if(S.preclin)L.push(`- Preclinical–Clinical integration: link basic science (anatomy/physiology/biochemistry/pathology) to the clinical scenario`);
+ L.push(`- Topic: ${S.topic||(S.purpose==="improve"?"(keep the original topic/disease from the provided item unless it is wrong)":"(not specified — choose a suitable topic within the blueprint below)")}`);
+ if(S.subject)L.push(`- Clinical subject: ${S.subject}`);
+ L.push(`- Blueprint: ${S.domain} → ${S.subitem}`);
+ L.push(`- Physician task: ${S.task}`);
+ L.push(`- Bloom level: ${S.bloom} → Taxonomy = ${taxonomy()}`);
+ L.push(`- Difficulty: ${diffText("en")}`);
+ L.push(`- Clinical vignette stem: ${S.vignette==="yes"?"Yes — realistic patient scenario":"No — direct knowledge question"}`);
+ L.push(`- Item type: ${S.qtype}`);
+ L.push(`- Stem length: ${lenEN(S.stemlen)}`);
+ L.push(`- Option length: ${lenEN(S.optlen)}`);
+ L.push(`- Number of options: ${S.nopt} · labels ${optRange()}`);
+ L.push(`- Language of the question & options: ${S.qlang==="ไทย"?"Thai":"English"}`);
+ L.push(`- Language of answer key & explanation: ${S.keylang==="ไทย"?"Thai":"English"}`);
+ L.push(``);
+ L.push(`# ITEM-WRITING RULES (follow all)`);
+ L.push(`1. One-best-answer with a single best option.`);
+ L.push(`2. All ${S.nopt} options must be homogeneous (same category) and similar in length.`);
+ L.push(`3. No negative-form items ("which is NOT", "EXCEPT"); no "all/none of the above".`);
+ L.push(`4. Avoid short stem / long options; every distractor must be plausible.`);
+ L.push(`5. Use metric units and standard laboratory reference values.`);
+ if(S.vignette==="yes")L.push(`6. The vignette must contain all data needed (age, sex, presentation, duration, relevant exam/labs) and be answerable without outside assumptions.`);
+ L.push(`${S.vignette==="yes"?"7":"6"}. The lead-in must pass the cover-the-options test (answerable with options hidden).`);
+ L.push(`${S.vignette==="yes"?"8":"7"}. Content must be evidence-based, current, and appropriate to the Thai clinical context.`);
+ if(S.writestyle==="USMLE")L.push(`${S.vignette==="yes"?"9":"8"}. Use USMLE structure: patient data → findings → single lead-in.`);
+ if(S.purpose==="improve"){
+   L.push(``);
+   L.push(`# HOW TO IMPROVE`);
+   L.push(`1. Diagnose the original item's flaws point by point (structure, stem, options, answer, clinical accuracy).`);
+   L.push(`2. Fix every rule above while keeping the original disease/topic/difficulty where appropriate.`);
+   L.push(`3. If the original stem lacks data needed to answer, add the necessary data reasonably and mark what was added.`);
+   L.push(`4. If the original answer is wrong or has more than one correct option, correct it and explain why.`);
+ }
+ L.push(``);
+ L.push(`# REQUIRED OUTPUT FORMAT`);
+ L.push(deliveryEN());
+ L.push(`Each item must include:`);
+ L.push(`- **Stem:** ...`);
+ L.push(`- **Options:** ${optLine()}`);
+ L.push(`- **Answer:** ${S.optlabel==="123"?"number":"letter"} of the correct option`);
+ L.push(`- **Keyword:** the key that points to the answer`);
+ L.push(`- **Explanation:** ${scopeEN()}`);
+ L.push(`- **Blueprint tag:** ${S.domain} → ${S.subitem} | ${S.task} | ${taxonomy()} | ${S.spec}`);
+ L.push(`- **Reference:** cite the source of the answer (textbook/guideline)`);
+ if(S.purpose==="improve")L.push(`- **Changelog:** bullet-list what was changed from the original and why (e.g. fixed negative stem, made options homogeneous, added vignette data, corrected answer/distractors)`);
+ if(S.aiindex){
+   L.push(``);
+   L.push(`# DISTRACTOR SCORING & ACCEPTABLE INDEX (AI)`);
+   L.push(`- Correct option = 2 points.`);
+   L.push(`- Score each distractor by closeness to the answer: 0, 0.5, 1.0, or 1.5 (use only 0/0.5/1.0/1.5/2.0).`);
+   L.push(`- AI = 2 ÷ (sum of all ${S.nopt} option scores).`);
+   L.push(`- Interpret: AI < 0.4 hard, 0.4–0.6 moderate, ≥ 0.6 easy.`);
+   L.push(`- Show a per-option score table, the AI value, and whether it matches the requested difficulty (${S.diff}).`);
+ }
+ if(isBatch()){
+   L.push(``);
+   L.push(`# BATCH INSTRUCTIONS (${n} items)`);
+   L.push(`- Produce ${n} items, numbered 1–${n}.`);
+   L.push(S.distribute==="vary"
+     ? `- Vary across sub-topics of "${S.domain}", Bloom levels, and difficulty, staying within ${S.spec} and the given blueprint/task. No repeated diseases/topics.`
+     : `- Keep the same specification for every item but change the patient scenario so none repeat.`);
+   if(S.aiindex)L.push(`- End with a summary table: item # | blueprint | Bloom | AI | difficulty, then compute overall MPL = (Σ AI ÷ ${n}) × 100.`);
+   if(S.batchnote)L.push(`- Extra instructions: ${S.batchnote}`);
+ }
+ return L.join("\n");
+}
+function scopeEN(){
+ if(S.keyscope==="all")return "explain the correct answer and why each distractor is wrong";
+ if(S.keyscope==="wrong")return "explain only why each distractor is wrong";
+ return "explain only why the correct option is best";
+}
+
+let lastText="";
+function render(){
+ const txt=S.plang==="th"?buildTH():buildEN();
+ lastText=txt;
+ const html=txt.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))
+   .replace(/^(#.*)$/gm,'<span class="hl">$1</span>');
+ $("#preview").innerHTML=html;
+ $("#pvmeta").textContent=(S.plang==="th"?"ไทย":"อังกฤษ")+" · "+(isBatch()?S.count+" ข้อ":"1 ข้อ")+(S.purpose==="improve"?" · ปรับปรุง":"");
+ $("#charcnt").textContent=txt.length.toLocaleString()+" ตัวอักษร";
+}
+
+$("#copy").onclick=async()=>{
+ try{await navigator.clipboard.writeText(lastText);showToast("คัดลอก prompt แล้ว — วางใน "+S.ai+" ได้เลย");}
+ catch(e){const ta=document.createElement("textarea");ta.value=lastText;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");showToast("คัดลอก prompt แล้ว");}catch(_){showToast("คัดลอกไม่สำเร็จ — เลือกข้อความในกล่องแล้วคัดลอกเอง");}document.body.removeChild(ta);}
+};
+$("#openai").onclick=()=>{
+ const urls={Claude:"https://claude.ai/new",ChatGPT:"https://chatgpt.com",Gemini:"https://gemini.google.com/app",Copilot:"https://copilot.microsoft.com",DeepSeek:"https://chat.deepseek.com"};
+ window.open(urls[S.ai]||"https://claude.ai/new","_blank","noopener");
+};
+let tt;function showToast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2600);}
+
+$("#topic").value=S.topic="Community-acquired pneumonia";
+$("#subject").value=S.subject="กลไกการเกิด hypoxemia ใน lobar pneumonia";
+render();
+</script>
+
+</body>
+</html>
