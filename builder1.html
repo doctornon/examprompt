@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://pgsuvtaigujlyhagonje.supabase.co" crossorigin>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 <script defer src="./auth.js" data-gate="1"></script>
+<script defer src="./profile.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,6 +179,7 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
     <nav class="xnav-seg" aria-label="สลับเครื่องมือ">
       <a href="./builder1.html" class="on">Builder 1 &middot; รายข้อเชิงลึก</a>
       <a href="./builder2.html">Builder 2 &middot; ชุดตามผัง</a>
+      <a href="./dashboard.html">Dashboard</a>
     </nav>
   </div>
 </div>
@@ -890,11 +892,27 @@ function render(){
  $("#charcnt").textContent=txt.length.toLocaleString()+" ตัวอักษร";
 }
 
+
+/* ---- บันทึกการใช้งานลง dashboard ---- */
+function epLogUse(action){
+ if(!window.EPAuth || !window.EPAuth.log) return;
+ var specLabel=(typeof SPECIALTIES!=="undefined" ? (SPECIALTIES.find(function(x){return x[0]===S.spec;})||[])[1] : null);
+ window.EPAuth.log({
+  builder:1, action:action,
+  step:S.examstyle, model:S.ai, n_items:S.count,
+  disciplines:[specLabel? (S.spec+" · "+specLabel) : S.spec],
+  systems:[], tasks:[S.task],
+  taxonomy:(S.domain||"")+(S.subitem? " · "+S.subitem : ""),
+  difficulty:S.diff, out_format:S.outfmt, topic:S.topic
+ });
+}
 $("#copy").onclick=async()=>{
+ epLogUse("copy");
  try{await navigator.clipboard.writeText(lastText);showToast("คัดลอก prompt แล้ว — วางใน "+S.ai+" ได้เลย");}
  catch(e){const ta=document.createElement("textarea");ta.value=lastText;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");showToast("คัดลอก prompt แล้ว");}catch(_){showToast("คัดลอกไม่สำเร็จ — เลือกข้อความในกล่องแล้วคัดลอกเอง");}document.body.removeChild(ta);}
 };
 $("#openai").onclick=()=>{
+ epLogUse("open");
  const urls={Claude:"https://claude.ai/new",ChatGPT:"https://chatgpt.com",Gemini:"https://gemini.google.com/app",Copilot:"https://copilot.microsoft.com",DeepSeek:"https://chat.deepseek.com"};
  window.open(urls[S.ai]||"https://claude.ai/new","_blank","noopener");
 };

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — MCQ Prompt Builder Platform</title>
+<link rel="icon" href="./favicon.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://pgsuvtaigujlyhagonje.supabase.co" crossorigin>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script defer src="./auth.js" data-gate="1"></script>
+<script defer src="./profile.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#eaf0ee; --surface:#fff; --surface-2:#f4f8f6;
+  --ink:#12211f; --ink-soft:#41524f; --muted:#6c7d79;
+  --border:#dae3e0; --border-strong:#c1cecb;
+  --accent:#0e7c6b; --accent-ink:#0a5347; --accent-soft:#d8ece7;
+  --b1:#0e7c6b; --b1-soft:#d8ece7; --b2:#5348c7; --b2-soft:#e7e5f9;
+  --shadow:0 1px 2px rgba(18,33,31,.06),0 4px 16px rgba(18,33,31,.05);
+  --radius:14px;
+  --font:"IBM Plex Sans Thai","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --ground:#0c1413; --surface:#141f1d; --surface-2:#101917;
+  --ink:#e7efec; --ink-soft:#a7b6b2; --muted:#7d8f8b;
+  --border:#243230; --border-strong:#33443f;
+  --accent:#37b79c; --accent-ink:#8fe0cf; --accent-soft:#173330;
+  --b1:#37b79c; --b1-soft:#14322e; --b2:#a09af0; --b2-soft:#211d4a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6}
+a{color:inherit}
+
+.xnav{background:var(--surface-2);border-bottom:1px solid var(--border)}
+.xnav-in{max-width:1320px;margin:0 auto;padding:7px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.xnav-home{font-size:12.5px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.xnav-home:hover{color:var(--accent)}
+.xnav-seg{margin-left:auto;display:flex;border:1px solid var(--border-strong);border-radius:999px;overflow:hidden;background:var(--surface)}
+.xnav-seg a{padding:5px 14px;font-size:12.5px;text-decoration:none;color:var(--muted);white-space:nowrap}
+.xnav-seg a + a{border-left:1px solid var(--border)}
+.xnav-seg a.on{background:var(--accent);color:#fff;font-weight:500}
+
+.top{background:var(--surface);border-bottom:1px solid var(--border)}
+.top-inner{max-width:1320px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;gap:12px}
+.top-inner img{width:42px;height:42px;border-radius:9px;background:#fff;object-fit:contain}
+.top-inner h1{font-size:16px;font-weight:600;margin:0}
+.top-inner p{font-size:11.5px;color:var(--muted);margin:1px 0 0}
+
+.wrap{max-width:1320px;margin:0 auto;padding:26px 20px 60px}
+h2.sec{font-size:17px;font-weight:600;margin:0 0 4px}
+p.sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
+.hr{height:1px;background:var(--border);margin:34px 0 26px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;box-shadow:var(--shadow)}
+.kpi .k{font-size:11px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font-size:27px;font-weight:600;letter-spacing:-.02em;margin-top:5px;line-height:1.1}
+.kpi.b1 .v{color:var(--b1)} .kpi.b2 .v{color:var(--b2)}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.panel-h{padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.panel-h h3{font-size:14px;font-weight:600;margin:0}
+.panel-h .n{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto}
+.panel-b{padding:4px 18px 14px;overflow:auto}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{font-size:11px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:500;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--accent);display:block;min-width:2px}
+.bar.v2{background:var(--b2)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:1px 7px;border-radius:5px;white-space:nowrap}
+.tag.b1{background:var(--b1-soft);color:var(--accent-ink)} .tag.b2{background:var(--b2-soft);color:var(--b2)}
+.muted{color:var(--muted)}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.filters select,.filters input{font-family:inherit;font-size:13px;padding:7px 11px;border:1px solid var(--border);
+  border-radius:9px;background:var(--surface);color:var(--ink)}
+.filters label{font-size:12px;color:var(--muted)}
+.empty{padding:26px 10px;text-align:center;color:var(--muted);font-size:13.5px}
+.ep-credit{max-width:1320px;margin:0 auto;padding:20px 22px 34px;text-align:center;font-size:12px;
+  line-height:1.7;color:var(--muted);border-top:1px solid var(--border)}
+.ep-credit b{color:var(--ink-soft);font-weight:600}
+img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;display:block}
+#adminwrap[hidden]{display:none}
+</style>
+
+<div class="xnav">
+  <div class="xnav-in">
+    <a class="xnav-home" href="./">&#8592; หน้าเลือกเครื่องมือ</a>
+    <nav class="xnav-seg">
+      <a href="./builder1.html">Builder 1</a>
+      <a href="./builder2.html">Builder 2</a>
+      <a href="./dashboard.html" class="on">Dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="top">
+  <div class="top-inner">
+    <img class="ep-logo" src="./mhpd-logo.png" alt="ตราสัญลักษณ์ สพพ." width="42" height="42">
+    <div>
+      <h1>Dashboard การใช้งาน</h1>
+      <p id="whoami">กำลังโหลด…</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="wrap">
+  <h2 class="sec">สรุปการใช้งานของฉัน</h2>
+  <p class="sub" id="mysub">นับทุกครั้งที่กดคัดลอกหรือเปิด prompt ในเครื่องมือทั้งสองตัว</p>
+  <div class="kpis" id="mykpi"></div>
+  <div class="panel">
+    <div class="panel-h"><h3>ครั้งล่าสุดที่สั่งสร้าง</h3><span class="n" id="myn"></span></div>
+    <div class="panel-b" id="mylist"></div>
+  </div>
+
+  <div id="adminwrap" hidden>
+    <div class="hr"></div>
+    <h2 class="sec">ภาพรวมทั้งระบบ <span class="tag b2" style="vertical-align:3px">admin</span></h2>
+    <p class="sub">นับจากทุกผู้ใช้ · กรองช่วงเวลาและเครื่องมือได้</p>
+
+    <div class="filters">
+      <label for="fdays">ช่วงเวลา</label>
+      <select id="fdays">
+        <option value="7">7 วันล่าสุด</option>
+        <option value="30" selected>30 วันล่าสุด</option>
+        <option value="90">90 วันล่าสุด</option>
+        <option value="0">ทั้งหมด</option>
+      </select>
+      <label for="fbuilder">เครื่องมือ</label>
+      <select id="fbuilder">
+        <option value="0">ทั้งสองตัว</option>
+        <option value="1">Builder 1</option>
+        <option value="2">Builder 2</option>
+      </select>
+    </div>
+
+    <div class="kpis" id="akpi"></div>
+
+    <div class="panel">
+      <div class="panel-h"><h3>รายวิชา (สาขา)</h3><span class="n" id="an-disc"></span></div>
+      <div class="panel-b" id="a-disc"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h3>ภารกิจของแพทย์</h3><span class="n" id="an-task"></span></div>
+      <div class="panel-b" id="a-task"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h3>Taxonomy — ระดับการคิด และหมวดข้อสอบ</h3><span class="n" id="an-tax"></span></div>
+      <div class="panel-b" id="a-tax"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h3>ตารางไขว้ · Taxonomy × วิชา × ภารกิจ</h3><span class="n" id="an-cross"></span></div>
+      <div class="panel-b" id="a-cross"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h3>ผู้ใช้งานรายคน</h3><span class="n" id="an-users"></span></div>
+      <div class="panel-b" id="a-users"></div>
+    </div>
+  </div>
+</div>
+
+<div class="ep-credit">พัฒนาโดย <b>นายแพทย์ชานนท์ นันทวงค์</b><br>
+ผู้ช่วยผู้อำนวยการสำนักส่งเสริมสนับสนุนการผลิต พัฒนาแพทย์และบุคลากรทางการแพทย์ (สพพ.)</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(t) { return String(t == null ? '' : t).replace(/[<>&"]/g, function (c) {
+    return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]; }); }
+  function fmtDate(s) {
+    var d = new Date(s);
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }) + ' ' +
+           d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  }
+  function kpi(host, items) {
+    host.innerHTML = items.map(function (i) {
+      return '<div class="kpi ' + (i.cls || '') + '"><div class="k">' + esc(i.k) + '</div>' +
+             '<div class="v">' + esc(i.v) + '</div></div>';
+    }).join('');
+  }
+  /* ตารางอันดับพร้อมแถบสัดส่วน */
+  function rank(host, counter, label, cls) {
+    var rows = Object.keys(counter).map(function (k) { return [k, counter[k]]; })
+                     .sort(function (a, b) { return b[1] - a[1]; });
+    if (!rows.length) { host.innerHTML = '<div class="empty">ยังไม่มีข้อมูลในช่วงที่เลือก</div>'; return 0; }
+    var max = rows[0][1];
+    host.innerHTML = '<table><thead><tr><th>' + esc(label) + '</th><th class="num">ครั้ง</th><th style="width:32%">สัดส่วน</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td>' + esc(r[0]) + '</td><td class="num">' + r[1] + '</td>' +
+               '<td><span class="bar ' + (cls || '') + '" style="width:' + Math.round(r[1] / max * 100) + '%"></span></td></tr>';
+      }).join('') + '</tbody></table>';
+    return rows.length;
+  }
+  function bump(o, k) { if (!k) return; o[k] = (o[k] || 0) + 1; }
+  function bumpAll(o, arr) { (arr || []).forEach(function (k) { bump(o, k); }); }
+
+  window.addEventListener('load', function () {
+    if (!window.EPAuth) return;
+    window.EPAuth.ready(function (user, profile) {
+      if (!user) return;                       // auth.js แสดงหน้าล็อกอินอยู่แล้ว
+      if (profile && !profile.onboarded_at) return;  // profile.js แสดงหน้าลงทะเบียนอยู่
+
+      var sb = window.EPAuth.client;
+      var isAdmin = profile && profile.role === 'admin';
+      $('whoami').textContent = (profile && profile.full_name ? profile.full_name : user.email) +
+        (isAdmin ? ' · ผู้ดูแลระบบ' : '');
+
+      /* ---------- ของฉัน ---------- */
+      sb.from('ep_events').select('*').eq('user_id', user.id)
+        .order('created_at', { ascending: false }).limit(500)
+        .then(function (r) {
+          var ev = r.data || [];
+          var b1 = ev.filter(function (e) { return e.builder === 1; }).length;
+          var items = ev.reduce(function (a, e) { return a + (e.n_items || 0); }, 0);
+          kpi($('mykpi'), [
+            { k: 'สั่งสร้างทั้งหมด', v: ev.length },
+            { k: 'ข้อสอบที่ขอไป', v: items.toLocaleString() },
+            { k: 'ใช้ Builder 1', v: b1, cls: 'b1' },
+            { k: 'ใช้ Builder 2', v: ev.length - b1, cls: 'b2' }
+          ]);
+          $('myn').textContent = ev.length ? 'แสดง ' + Math.min(ev.length, 25) + ' จาก ' + ev.length : '';
+          if (!ev.length) { $('mylist').innerHTML = '<div class="empty">ยังไม่เคยสั่งสร้าง prompt — ลองเปิด Builder แล้วกดคัดลอกดู</div>'; return; }
+          $('mylist').innerHTML = '<table><thead><tr><th>เมื่อ</th><th>เครื่องมือ</th><th>วิชา</th>' +
+            '<th>ภารกิจ</th><th>taxonomy</th><th class="num">ข้อ</th></tr></thead><tbody>' +
+            ev.slice(0, 25).map(function (e) {
+              return '<tr><td class="muted">' + esc(fmtDate(e.created_at)) + '</td>' +
+                '<td><span class="tag b' + e.builder + '">B' + e.builder + '</span></td>' +
+                '<td>' + esc((e.disciplines || []).join(', ') || '—') + '</td>' +
+                '<td>' + esc((e.tasks || []).join(', ') || '—') + '</td>' +
+                '<td class="muted">' + esc(e.taxonomy || '—') + '</td>' +
+                '<td class="num">' + (e.n_items || '—') + '</td></tr>';
+            }).join('') + '</tbody></table>';
+        });
+
+      if (!isAdmin) return;
+      $('adminwrap').hidden = false;
+
+      var ALL = [], NAMES = {};
+      function load() {
+        sb.from('ep_events').select('*').order('created_at', { ascending: false }).limit(20000)
+          .then(function (r) { ALL = r.data || []; return sb.from('ep_profiles').select('id,full_name,email,center_id,role'); })
+          .then(function (r) {
+            (r.data || []).forEach(function (p) { NAMES[p.id] = p; });
+            return sb.from('centers').select('id,name');
+          })
+          .then(function (r) {
+            var cmap = {}; (r.data || []).forEach(function (c) { cmap[c.id] = c.name; });
+            Object.keys(NAMES).forEach(function (k) { NAMES[k].center = cmap[NAMES[k].center_id] || '—'; });
+            draw();
+          }, draw);
+      }
+
+      function draw() {
+        var days = parseInt($('fdays').value, 10);
+        var bf = parseInt($('fbuilder').value, 10);
+        var since = days ? Date.now() - days * 864e5 : 0;
+        var ev = ALL.filter(function (e) {
+          return (!since || new Date(e.created_at).getTime() >= since) && (!bf || e.builder === bf);
+        });
+
+        var users = {}, disc = {}, task = {}, tax = {}, cross = {}, items = 0;
+        ev.forEach(function (e) {
+          users[e.user_id] = (users[e.user_id] || 0) + 1;
+          items += e.n_items || 0;
+          bumpAll(disc, e.disciplines); bumpAll(task, e.tasks); bump(tax, e.taxonomy);
+          (e.disciplines.length ? e.disciplines : ['—']).forEach(function (d) {
+            (e.tasks.length ? e.tasks : ['—']).forEach(function (t) {
+              var key = (e.taxonomy || '—') + '|' + d + '|' + t;
+              cross[key] = (cross[key] || 0) + 1;
+            });
+          });
+        });
+
+        kpi($('akpi'), [
+          { k: 'สั่งสร้างทั้งหมด', v: ev.length },
+          { k: 'ผู้ใช้ที่ใช้งานจริง', v: Object.keys(users).length },
+          { k: 'ข้อสอบที่ขอไป', v: items.toLocaleString() },
+          { k: 'เฉลี่ยต่อคน', v: Object.keys(users).length ? (ev.length / Object.keys(users).length).toFixed(1) : '0' }
+        ]);
+
+        $('an-disc').textContent = rank($('a-disc'), disc, 'วิชา / สาขา') + ' รายการ';
+        $('an-task').textContent = rank($('a-task'), task, 'ภารกิจของแพทย์') + ' รายการ';
+        $('an-tax').textContent  = rank($('a-tax'),  tax,  'taxonomy', 'v2') + ' รายการ';
+
+        var crows = Object.keys(cross).map(function (k) { return k.split('|').concat(cross[k]); })
+                          .sort(function (a, b) { return b[3] - a[3]; }).slice(0, 60);
+        $('an-cross').textContent = crows.length ? 'แสดง ' + crows.length + ' ชุดที่ถูกใช้มากสุด' : '';
+        $('a-cross').innerHTML = crows.length
+          ? '<table><thead><tr><th>Taxonomy</th><th>วิชา</th><th>ภารกิจของแพทย์</th><th class="num">ครั้ง</th></tr></thead><tbody>' +
+            crows.map(function (r) {
+              return '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) +
+                     '</td><td class="num">' + r[3] + '</td></tr>';
+            }).join('') + '</tbody></table>'
+          : '<div class="empty">ยังไม่มีข้อมูลในช่วงที่เลือก</div>';
+
+        var urows = Object.keys(users).map(function (id) { return [id, users[id]]; })
+                          .sort(function (a, b) { return b[1] - a[1]; });
+        $('an-users').textContent = urows.length + ' คน';
+        $('a-users').innerHTML = urows.length
+          ? '<table><thead><tr><th>ผู้ใช้</th><th>ศูนย์แพทย์ฯ</th><th class="num">ครั้ง</th></tr></thead><tbody>' +
+            urows.map(function (u) {
+              var p = NAMES[u[0]] || {};
+              return '<tr><td>' + esc(p.full_name || p.email || u[0].slice(0, 8)) +
+                     (p.role === 'admin' ? ' <span class="tag b2">admin</span>' : '') + '</td>' +
+                     '<td class="muted">' + esc(p.center || '—') + '</td>' +
+                     '<td class="num">' + u[1] + '</td></tr>';
+            }).join('') + '</tbody></table>'
+          : '<div class="empty">ยังไม่มีผู้ใช้ในช่วงที่เลือก</div>';
+      }
+
+      $('fdays').onchange = draw;
+      $('fbuilder').onchange = draw;
+      load();
+    });
+  });
+})();
+</script>
+</html>

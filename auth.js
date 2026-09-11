@@ -177,6 +177,7 @@
 
   function apply(session) {
     var user = session && session.user;
+    currentUser = user || null;
     renderUser(user);
     if (NEEDS_AUTH) {
       var ok = !!user;
@@ -186,21 +187,37 @@
     }
   }
 
+  // ---------- โปรไฟล์ + คิวรอ ----------
+  var profile = null, ready = false, queue = [];
+  function fire() {
+    ready = true;
+    var q = queue; queue = [];
+    q.forEach(function (cb) { try { cb(currentUser, profile); } catch (e) { console.error(e); } });
+  }
+  var currentUser = null;
+
+  function loadProfile(user) {
+    return sb.from('ep_profiles').select('*').eq('id', user.id).maybeSingle()
+      .then(function (r) { profile = r.data || null; return profile; });
+  }
+
   var touched = false;
   function touch(user) {
     if (touched) return;
     touched = true;
     var m = user.user_metadata || {};
+    // ห้ามเขียนทับ full_name ที่ผู้ใช้กรอกเองตอนลงทะเบียน
     sb.from('ep_profiles').update({
       last_seen_at: new Date().toISOString(),
       email: user.email,
-      full_name: m.full_name || m.name || null,
       avatar_url: m.avatar_url || m.picture || null
     }).eq('id', user.id).then(function () {}, function () {});
   }
 
   sb.auth.getSession().then(function (r) {
     apply(r.data.session);
+    var u = r.data.session && r.data.session.user;
+    if (u) { loadProfile(u).then(fire, fire); } else { fire(); }
     // เก็บกวาด query string ที่ Supabase แนบกลับมาหลังล็อกอิน
     if (/[?&](code|error)=/.test(location.search)) {
       history.replaceState({}, '', location.pathname);
@@ -211,11 +228,40 @@
     if (evt === 'SIGNED_IN' && session && session.user) touch(session.user);
   });
 
-  // เปิดให้หน้าอื่นเรียกใช้ได้ เช่น ปุ่มบันทึกผังลงฐานข้อมูล
+  // ---------- บันทึกการใช้งานลง ep_events ----------
+  function log(payload) {
+    if (!currentUser) return Promise.resolve();
+    var row = {
+      user_id: currentUser.id,
+      builder: payload.builder,
+      action: payload.action || 'generate',
+      step: payload.step || null,
+      model: payload.model || null,
+      n_items: payload.n_items || null,
+      disciplines: payload.disciplines || [],
+      systems: payload.systems || [],
+      tasks: payload.tasks || [],
+      taxonomy: payload.taxonomy || null,
+      difficulty: payload.difficulty || null,
+      out_format: payload.out_format || null,
+      topic: (payload.topic || '').slice(0, 300) || null
+    };
+    return sb.from('ep_events').insert(row).then(function () {}, function (e) {
+      console.warn('[ep-auth] บันทึกการใช้งานไม่สำเร็จ', e && e.message);
+    });
+  }
+
+  // เปิดให้หน้าอื่นเรียกใช้ได้
   window.EPAuth = {
     client: sb,
     signIn: signIn,
     signOut: signOut,
+    log: log,
+    get user()    { return currentUser; },
+    get profile() { return profile; },
+    setProfile: function (p) { profile = p; },
+    reloadProfile: function () { return currentUser ? loadProfile(currentUser) : Promise.resolve(null); },
+    ready: function (cb) { if (ready) cb(currentUser, profile); else queue.push(cb); },
     getUser: function () { return sb.auth.getUser().then(function (r) { return r.data.user; }); }
   };
 })();

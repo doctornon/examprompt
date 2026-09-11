@@ -6,6 +6,7 @@
 <link rel="preconnect" href="https://pgsuvtaigujlyhagonje.supabase.co" crossorigin>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 <script defer src="./auth.js" data-gate="1"></script>
+<script defer src="./profile.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -160,6 +161,7 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
     <nav class="xnav-seg" aria-label="สลับเครื่องมือ">
       <a href="./builder1.html">Builder 1 &middot; รายข้อเชิงลึก</a>
       <a href="./builder2.html" class="on">Builder 2 &middot; ชุดตามผัง</a>
+      <a href="./dashboard.html">Dashboard</a>
     </nav>
   </div>
 </div>
@@ -614,12 +616,30 @@ async function copyText(txt){
     ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok;
   }
 }
+
+/* ---- บันทึกการใช้งานลง dashboard ---- */
+function epLogUse(action){
+  if(!window.EPAuth || !window.EPAuth.log) return;
+  var cap = picked('cap')[0];
+  window.EPAuth.log({
+    builder:2, action:action,
+    step:$('step').value, model:model, n_items:parseInt($('n').value,10)||null,
+    disciplines:names('discipline'), systems:names('system'), tasks:names('task'),
+    taxonomy:(names('bloom')[0]||null),
+    difficulty:(names('diff')[0]||null),
+    out_format:$('fmt').value,
+    topic:$('topic').value.trim() || (cap ? cap[0] : '')
+  });
+}
 $('btnCopy').onclick = async ()=>{
-  toast(await copyText(update()) ? 'คัดลอกแล้ว วางในแชท AI ได้เลย' : 'คัดลอกไม่สำเร็จ ให้เลือกข้อความในกล่องแล้วกด Ctrl+C');
+  var ok = await copyText(update());
+  epLogUse('copy');
+  toast(ok ? 'คัดลอกแล้ว วางในแชท AI ได้เลย' : 'คัดลอกไม่สำเร็จ ให้เลือกข้อความในกล่องแล้วกด Ctrl+C');
 };
 $('btnOpen').onclick = async ()=>{
   const p = update();
   await copyText(p);
+  epLogUse('open');
   const url = ADAPTER[model].url(p);
   // ลิงก์แบบส่ง prompt ทาง URL มีเพดานความยาว ถ้ายาวเกินให้เปิดหน้าเปล่าแล้วให้ผู้ใช้วางเอง
   const safe = url.length > 7000 ? url.split('?')[0] : url;
