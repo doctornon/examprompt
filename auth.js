@@ -198,7 +198,32 @@
 
   function loadProfile(user) {
     return sb.from('ep_profiles').select('*').eq('id', user.id).maybeSingle()
-      .then(function (r) { profile = r.data || null; return profile; });
+      .then(function (r) {
+        profile = r.data || null;
+        applyProfileUI();
+        return profile;
+      });
+  }
+
+  // แสดงเมนูผู้ดูแลระบบ และกันบัญชีที่ถูกระงับ
+  function applyProfileUI() {
+    var isAdmin = !!(profile && profile.role === 'admin');
+    [].forEach.call(document.querySelectorAll('[data-admin-only]'), function (el) {
+      el.hidden = !isAdmin;
+    });
+    if (profile && profile.active === false) blockSuspended();
+  }
+
+  function blockSuspended() {
+    var g = document.getElementById('ep-gate') || buildGate();
+    g.hidden = false;
+    document.documentElement.classList.add('ep-locked');
+    g.querySelector('.ep-card').innerHTML =
+      '<h2>บัญชีนี้ถูกระงับการใช้งาน</h2>' +
+      '<p>ผู้ดูแลระบบได้ระงับการเข้าใช้งานของบัญชีนี้ไว้ หากคิดว่าเป็นความผิดพลาด ' +
+         'กรุณาติดต่อผู้ดูแลระบบของแพลตฟอร์ม</p>' +
+      '<button class="ep-mini" id="ep-out2">ออกจากระบบ</button>';
+    g.querySelector('#ep-out2').addEventListener('click', signOut);
   }
 
   var touched = false;
@@ -244,7 +269,9 @@
       taxonomy: payload.taxonomy || null,
       difficulty: payload.difficulty || null,
       out_format: payload.out_format || null,
-      topic: (payload.topic || '').slice(0, 300) || null
+      topic: (payload.topic || '').slice(0, 300) || null,
+      prompt_version: payload.prompt_version || null,
+      cap_profile: payload.cap_profile || null
     };
     return sb.from('ep_events').insert(row).then(function () {}, function (e) {
       console.warn('[ep-auth] บันทึกการใช้งานไม่สำเร็จ', e && e.message);

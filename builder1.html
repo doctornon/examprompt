@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://pgsuvtaigujlyhagonje.supabase.co" crossorigin>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script src="./capabilities.js"></script>
 <script defer src="./auth.js" data-gate="1"></script>
 <script defer src="./profile.js"></script>
 
@@ -180,6 +181,7 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
       <a href="./builder1.html" class="on">Builder 1 &middot; รายข้อเชิงลึก</a>
       <a href="./builder2.html">Builder 2 &middot; ชุดตามผัง</a>
       <a href="./dashboard.html">Dashboard</a>
+      <a href="./admin.html" data-admin-only hidden>จัดการผู้ใช้</a>
     </nav>
   </div>
 </div>
@@ -521,36 +523,7 @@ const TASKS=[
  "Prognosis / risk factors / outcome"
 ];
 const MPL={Low:{r:"0.6–0.7",ai:"AI ≥ 0.6",pos:"84%"},Medium:{r:"0.4–0.6",ai:"AI 0.4–0.6",pos:"50%"},High:{r:"0.3–0.4",ai:"AI < 0.4",pos:"16%"}};
-const AIS={
- "Claude":{plans:["Free","Pro","Max","Team","Enterprise"],models:{
-   Free:["Claude Sonnet 5","Claude Haiku 4.5"],
-   Pro:["Claude Sonnet 5","Claude Opus 5","Claude Haiku 4.5"],
-   Max:["Claude Opus 5","Claude Sonnet 5","Claude Haiku 4.5","Claude Fable 5"],
-   Team:["Claude Sonnet 5","Claude Opus 5","Claude Haiku 4.5"],
-   Enterprise:["Claude Opus 5","Claude Sonnet 5","Claude Haiku 4.5","Claude Fable 5"]}},
- "ChatGPT":{plans:["Free","Go","Plus","Pro","Business","Enterprise"],models:{
-   Free:["GPT-5.5 Instant","GPT-5.5 mini"],
-   Go:["GPT-5.5 Instant","GPT-5.5 Thinking","GPT-5.5 mini"],
-   Plus:["GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3","GPT-5.5 mini"],
-   Pro:["GPT-5.5 Pro","GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3"],
-   Business:["GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3"],
-   Enterprise:["GPT-5.5 Pro","GPT-5.5 Thinking","GPT-5.5 Instant","GPT-5.3"]}},
- "Gemini":{plans:["Free","Google AI Plus","Google AI Pro","Google AI Ultra"],models:{
-   "Free":["Gemini 3 Flash","Gemini 3.1 Flash-Lite"],
-   "Google AI Plus":["Gemini 3.1 Pro","Gemini 3 Flash"],
-   "Google AI Pro":["Gemini 3.1 Pro","Gemini 3 Flash","Gemini 3.1 Flash-Lite"],
-   "Google AI Ultra":["Gemini 3.1 Pro","Deep Think (Ultra)","Gemini 3 Flash"]}},
- "Copilot":{plans:["Free","Copilot Pro","Microsoft 365 Copilot"],models:{
-   "Free":["Smart (auto)","Quick response"],
-   "Copilot Pro":["Think Deeper (GPT-5)","Smart (auto)"],
-   "Microsoft 365 Copilot":["Think Deeper (GPT-5)","Smart (auto)"]}},
- "DeepSeek":{plans:["Free (เว็บ)","API"],models:{
-   "Free (เว็บ)":["DeepSeek-V3.2","DeepSeek-R1 (reasoning)"],
-   "API":["DeepSeek-V3.2","DeepSeek-R1 (reasoning)"]}},
- "อื่น ๆ":{plans:["Free","แบบเสียเงิน"],models:{
-   "Free":["ไม่ระบุรุ่น"],"แบบเสียเงิน":["ไม่ระบุรุ่น"]}}
-};
-const FREE_PLANS=["Free","Free (เว็บ)"];
+const AIS = EPCap.PROVIDERS;   /* ใช้ทะเบียนกลางร่วมกับ Builder 2 */
 
 const S={
  topic:"",subject:"",ai:"Claude",model:"Claude Opus 5",plan:"Pro",
@@ -581,11 +554,12 @@ TASKS.forEach(t=>{const o=document.createElement("option");o.value=t;o.textConte
 $("#task").value=S.task;
 
 function fillSelect(sel,items,keep){sel.innerHTML="";items.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o);});const val=items.includes(keep)?keep:items[0];sel.value=val;return val;}
-function fillModels(preserve){const cfg=AIS[S.ai]||AIS["อื่น ๆ"];const list=cfg.models[S.plan]||cfg.models[cfg.plans[0]];
+function fillModels(preserve){const cfg=AIS[S.ai]||AIS[Object.keys(AIS)[0]];const list=cfg.models[S.plan]||cfg.models[cfg.plans[0]];
  S.model=fillSelect($("#model"),list,preserve?S.model:list[0]);}
-function fillAI(preserve){const cfg=AIS[S.ai]||AIS["อื่น ๆ"];
+function fillAI(preserve){const cfg=AIS[S.ai]||AIS[Object.keys(AIS)[0]];
  S.plan=fillSelect($("#plan"),cfg.plans,preserve?S.plan:cfg.plans[0]);
  fillModels(preserve);}
+S.ai=fillSelect($("#ai"),Object.keys(AIS),S.ai);
 fillAI(true);
 
 function bindPills(id,key,after){
@@ -702,7 +676,8 @@ function buildTH(){
  L.push(`คุณคืออาจารย์แพทย์ผู้เชี่ยวชาญด้านการออกข้อสอบปรนัย (item writer) ระดับชาติ สำหรับการสอบ ${S.examstyle} แนว ${S.writestyle} (${S.nl2})`);
  if(S.purpose==="improve")L.push(`ภารกิจ: ปรับปรุงข้อสอบเดิม${many?`ทั้ง ${n} ข้อ`:``}ที่ยังไม่สมบูรณ์ให้ได้คุณภาพระดับสอบใบประกอบวิชาชีพ ตามข้อกำหนดและกติกาด้านล่าง โดยคงเจตนา/โรค/ประเด็นเดิมไว้เท่าที่เหมาะสม แก้เฉพาะจุดที่ทำให้ไม่ได้มาตรฐาน`);
  else L.push(`ภารกิจ: สร้างข้อสอบ MCQ ${many?`จำนวน ${n} ข้อ`:`จำนวน 1 ข้อ`} ที่มีคุณภาพระดับสอบใบประกอบวิชาชีพ ตามข้อกำหนดและกติกาด้านล่างอย่างเคร่งครัด`);
- L.push(`บริบทการใช้งาน: prompt นี้จัดทำเพื่อใช้กับ ${S.ai} รุ่น ${S.model} (แพ็กเกจ ${S.plan})`);
+ /* ไม่แปะชื่อ AI ลงในคำสั่งอีกต่อไป — โมเดลไม่เปลี่ยนพฤติกรรมเพราะถูกบอกว่าตัวเองชื่ออะไร
+    สิ่งที่ใส่แทนคือชั้นห่อที่ปรับตามความสามารถจริงของรุ่น (ดู capWrapTH ท้ายไฟล์) */
  L.push(``);
  if(S.purpose==="improve"){sourceBlockTH().forEach(x=>L.push(x));L.push(``);}
  L.push(`# ข้อกำหนดของข้อสอบ (Specification)${S.purpose==="improve"?" — เป้าหมายหลังปรับปรุง":""}`);
@@ -774,12 +749,41 @@ function buildTH(){
    if(S.aiindex)L.push(`- สรุปตารางรวมท้ายชุด: หมายเลขข้อ | หมวด blueprint | Bloom | ค่า AI | ระดับความยาก แล้วคำนวณ MPL รวมของทั้งชุด = (ผลรวมค่า AI ÷ ${n}) × 100`);
    if(S.batchnote)L.push(`- ข้อกำหนดเพิ่มเติมจากอาจารย์: ${S.batchnote}`);
  }
- if(S.ai==="อื่น ๆ"||FREE_PLANS.includes(S.plan)){
+ if(false){
    L.push(``);L.push(`# หมายเหตุ`);
    L.push(`หากบริบท/โควตาจำกัด (แพ็กเกจ ${S.plan}) ให้ทยอยออกทีละข้อและคงคุณภาพตามกติกาข้างต้นเสมอ`);
  }
  return L.join("\n");
 }
+const HARD_RULES_B1 = `1. ข้อสอบปรนัยตามรูปแบบที่กำหนด มีคำตอบถูกที่สุดเพียงข้อเดียว
+2. โจทย์ต้องครบตามโครงที่สั่ง และตัวลวงต้องทำงานได้จริง
+3. เนื้อหาต้องอยู่ในผัง blueprint ที่ระบุ ห้ามออกนอกหมวด
+4. ห้ามละเมิดกฎการเขียนข้อสอบที่ระบุไว้ข้างต้นแม้แต่ข้อเดียว`;
+
+function capProfile(){ return EPCap.profile(S.ai, S.plan, S.model); }
+
+/* ชั้นห่อ — ปรับตามความสามารถของรุ่น ไม่ใช่ตามยี่ห้อ */
+function capWrap(){
+  const prof = capProfile();
+  const out = EPCap.compose({
+    core:'', rules:'', blueprint:'', fmt:'', check:'',
+    hardRules: HARD_RULES_B1,
+    capLine: 'ผังที่สั่งไว้: ' + S.domain + (S.subitem ? ' · ' + S.subitem : '') + ' · ' + S.spec,
+    nWanted: S.count,
+    machineFormat: false
+  }, prof);
+  /* ดึงเฉพาะส่วน how_to_work และ final_reminder มาต่อท้าย prompt เดิมของ Builder 1 */
+  const m = out.text.match(/<how_to_work>\n([\s\S]*?)\n<\/how_to_work>/)
+         || out.text.match(/# วิธีทำงาน\n([\s\S]*?)(?:\n# ย้ำอีกครั้ง|$)/);
+  const tail = out.text.match(/<final_reminder>\n([\s\S]*?)\n<\/final_reminder>/)
+            || out.text.match(/# ย้ำอีกครั้ง\n([\s\S]*)$/);
+  let t = '\n# วิธีทำงานกับรุ่นที่เลือก\n' + (m ? m[1].trim() : '');
+  if (tail) t += '\n\n# ย้ำก่อนตอบ\n' + tail[1].trim();
+  lastCapPlan = out.plan; lastCapProfile = prof;
+  return t;
+}
+let lastCapPlan = null, lastCapProfile = null;
+
 function deliveryTH(){
  if(S.outfmt==="doc")return "การส่งมอบ: จัดผลลัพธ์เป็นเอกสาร (Word/Document) ที่ดาวน์โหลดได้ มีหัวเรื่อง เลขข้อ และตารางเฉลย/คำอธิบาย จัดหน้าให้พร้อมพิมพ์ — หากเครื่องมือสร้างไฟล์ไม่ได้ ให้จัดเป็นข้อความที่คัดลอกไปวางใน Word ได้ทันที";
  if(S.outfmt==="pdf")return "การส่งมอบ: จัดผลลัพธ์เป็นไฟล์ PDF ที่ดาวน์โหลดได้ จัดหน้าเรียบร้อย แยกส่วนโจทย์และเฉลยชัดเจน — หากเครื่องมือสร้างไฟล์ไม่ได้ ให้จัดเป็นข้อความที่พร้อมแปลงเป็น PDF";
@@ -802,7 +806,7 @@ function buildEN(){
  L.push(`You are an expert medical faculty item-writer for the ${S.examstyle} exam, ${S.writestyle} style (${S.nl2}).`);
  if(S.purpose==="improve")L.push(`Task: improve ${many?`the ${n} incomplete items`:`the incomplete item`} to national-licensing quality, following every specification and rule below, preserving the original intent/disease/topic where appropriate and changing only what fails the standard.`);
  else L.push(`Task: write ${many?`${n} MCQs`:`1 MCQ`} of national-licensing quality, following every specification and rule below.`);
- L.push(`Context: this prompt is intended for ${S.ai} — ${S.model} (${S.plan} plan).`);
+ /* see capWrap() — no brand name is injected */
  L.push(``);
  if(S.purpose==="improve"){sourceBlockEN().forEach(x=>L.push(x));L.push(``);}
  L.push(`# ITEM SPECIFICATION${S.purpose==="improve"?" — target after improvement":""}`);
@@ -883,12 +887,12 @@ function scopeEN(){
 
 let lastText="";
 function render(){
- const txt=S.plang==="th"?buildTH():buildEN();
+ const txt=(S.plang==="th"?buildTH():buildEN())+"\n"+capWrap();
  lastText=txt;
  const html=txt.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))
    .replace(/^(#.*)$/gm,'<span class="hl">$1</span>');
  $("#preview").innerHTML=html;
- $("#pvmeta").textContent=(S.plang==="th"?"ไทย":"อังกฤษ")+" · "+(isBatch()?S.count+" ข้อ":"1 ข้อ")+(S.purpose==="improve"?" · ปรับปรุง":"");
+ $("#pvmeta").textContent=(S.plang==="th"?"ไทย":"อังกฤษ")+" · "+(isBatch()?S.count+" ข้อ":"1 ข้อ")+(lastCapPlan&&lastCapPlan.split?" (แบ่ง "+lastCapPlan.rounds+" รอบ)":"")+(S.purpose==="improve"?" · ปรับปรุง":"");
  $("#charcnt").textContent=txt.length.toLocaleString()+" ตัวอักษร";
 }
 
@@ -899,11 +903,12 @@ function epLogUse(action){
  var specLabel=(typeof SPECIALTIES!=="undefined" ? (SPECIALTIES.find(function(x){return x[0]===S.spec;})||[])[1] : null);
  window.EPAuth.log({
   builder:1, action:action,
-  step:S.examstyle, model:S.ai, n_items:S.count,
+  step:S.examstyle, model:S.ai+" · "+S.model+" ("+S.plan+")", n_items:S.count,
   disciplines:[specLabel? (S.spec+" · "+specLabel) : S.spec],
   systems:[], tasks:[S.task],
   taxonomy:(S.domain||"")+(S.subitem? " · "+S.subitem : ""),
-  difficulty:S.diff, out_format:S.outfmt, topic:S.topic
+  difficulty:S.diff, out_format:S.outfmt, topic:S.topic,
+  prompt_version: EPCap.VERSION, cap_profile: lastCapProfile
  });
 }
 $("#copy").onclick=async()=>{

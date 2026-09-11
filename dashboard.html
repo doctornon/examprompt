@@ -99,6 +99,7 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;display:b
       <a href="./builder1.html">Builder 1</a>
       <a href="./builder2.html">Builder 2</a>
       <a href="./dashboard.html" class="on">Dashboard</a>
+      <a href="./admin.html" data-admin-only hidden>จัดการผู้ใช้</a>
     </nav>
   </div>
 </div>
@@ -160,6 +161,10 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;display:b
     <div class="panel">
       <div class="panel-h"><h3>ตารางไขว้ · Taxonomy × วิชา × ภารกิจ</h3><span class="n" id="an-cross"></span></div>
       <div class="panel-b" id="a-cross"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h3>รุ่น AI ที่ถูกใช้ · เทียบเวอร์ชันคำสั่ง</h3><span class="n" id="an-model"></span></div>
+      <div class="panel-b" id="a-model"></div>
     </div>
     <div class="panel">
       <div class="panel-h"><h3>ผู้ใช้งานรายคน</h3><span class="n" id="an-users"></span></div>
@@ -300,6 +305,26 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;display:b
             crows.map(function (r) {
               return '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) +
                      '</td><td class="num">' + r[3] + '</td></tr>';
+            }).join('') + '</tbody></table>'
+          : '<div class="empty">ยังไม่มีข้อมูลในช่วงที่เลือก</div>';
+
+        var mods = {};
+        ev.forEach(function (e) {
+          var k = (e.model || 'ไม่ระบุ') + '||' + (e.prompt_version || '—');
+          if (!mods[k]) mods[k] = { n: 0, items: 0, split: 0 };
+          mods[k].n++; mods[k].items += e.n_items || 0;
+          if (e.cap_profile && e.n_items > (e.cap_profile.items || 999)) mods[k].split++;
+        });
+        var mrows = Object.keys(mods).map(function (k) { return k.split('||').concat([mods[k]]); })
+                          .sort(function (a, b) { return b[2].n - a[2].n; });
+        $('an-model').textContent = mrows.length + ' ชุด';
+        $('a-model').innerHTML = mrows.length
+          ? '<table><thead><tr><th>รุ่นที่ใช้</th><th>เวอร์ชันคำสั่ง</th><th class="num">ครั้ง</th>' +
+            '<th class="num">ข้อรวม</th><th class="num">ต้องแบ่งรอบ</th></tr></thead><tbody>' +
+            mrows.map(function (r) {
+              return '<tr><td>' + esc(r[0]) + '</td><td class="muted">' + esc(r[1]) + '</td>' +
+                     '<td class="num">' + r[2].n + '</td><td class="num">' + r[2].items + '</td>' +
+                     '<td class="num">' + r[2].split + '</td></tr>';
             }).join('') + '</tbody></table>'
           : '<div class="empty">ยังไม่มีข้อมูลในช่วงที่เลือก</div>';
 
