@@ -112,6 +112,90 @@ body{background:var(--ground);color:var(--ink);font-family:var(--font);font-size
 
 footer{border-top:1px solid var(--border);margin-top:34px;padding-top:18px;font-size:11.5px;color:var(--muted);line-height:1.65}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ================= สีประจำตัวของแต่ละ builder ================= */
+:root{
+  --b1:#0e7c6b; --b1-soft:#d8ece7; --b1-ink:#0a5347;
+  --b2:#5348c7; --b2-soft:#e7e5f9; --b2-ink:#3b32a1;
+  --c-fg:#ffffff;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --b1:#37b79c; --b1-soft:#14322e; --b1-ink:#8fe0cf;
+  --b2:#a09af0; --b2-soft:#211d4a; --b2-ink:#c9c4fb;
+  --c-fg:#0c1413;
+}}
+:root[data-theme="dark"]{
+  --b1:#37b79c; --b1-soft:#14322e; --b1-ink:#8fe0cf;
+  --b2:#a09af0; --b2-soft:#211d4a; --b2-ink:#c9c4fb;
+  --c-fg:#0c1413;
+}
+.card.b1{--c:var(--b1);--c-soft:var(--b1-soft);--c-ink:var(--b1-ink)}
+.card.b2{--c:var(--b2);--c-soft:var(--b2-soft);--c-ink:var(--b2-ink)}
+.card{position:relative}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--c)}
+.card:hover{border-color:var(--c)}
+.card .card-top{padding-top:22px;background:linear-gradient(180deg,var(--c-soft) 0%,transparent 88%)}
+.card .badge{background:var(--c);color:var(--c-fg)}
+.card .chip{background:var(--surface);border-color:color-mix(in srgb,var(--c) 36%,var(--border));color:var(--c-ink)}
+.card .go{background:var(--c);color:var(--c-fg)}
+.card .go:hover{background:var(--c-ink);color:var(--c-fg)}
+
+/* ---- สรุปสั้นบนการ์ด ---- */
+.hilite{list-style:none;margin:0 0 15px;padding:0;display:grid;gap:9px}
+.hilite li{display:flex;gap:10px;font-size:13.4px;line-height:1.5;color:var(--ink-soft)}
+.hilite b{color:var(--ink);font-weight:600;display:block;font-size:13.6px}
+.hilite .n{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:var(--c-soft);color:var(--c-ink);font-family:var(--mono);font-size:10px;display:grid;place-items:center;margin-top:2px}
+
+/* ---- ปุ่มหุบย่อรายละเอียด ---- */
+details.more{border-top:1px dashed var(--border);padding-top:13px}
+details.more summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--c-ink);padding:6px 13px;border:1px solid color-mix(in srgb,var(--c) 32%,var(--border));border-radius:999px;background:var(--surface-2);user-select:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::marker{content:""}
+details.more summary:hover{border-color:var(--c);background:var(--c-soft)}
+details.more summary .caret{font-size:9px;transition:transform .18s}
+details.more[open] summary .caret{transform:rotate(180deg)}
+details.more[open] summary{margin-bottom:15px}
+summary .lbl-open{display:none}
+details[open] summary .lbl-open{display:inline}
+details[open] summary .lbl-shut{display:none}
+.more-b{animation:fadein .22s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ================= ตารางเทียบแบบกวาดตา ================= */
+.cmp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:22px}
+.cmp-row{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1fr) minmax(0,1fr);border-bottom:1px solid var(--border)}
+.cmp-row:last-child{border-bottom:none}
+.cmp-row>*{padding:10px 16px;font-size:13px;line-height:1.45;border-right:1px solid var(--border)}
+.cmp-row>*:last-child{border-right:none}
+.cmp-row.head{background:var(--surface-2)}
+.cmp-row.head>*{font-size:12.5px;font-weight:600;padding-top:11px;padding-bottom:11px}
+.cmp-row.head .c1{color:var(--b1-ink);box-shadow:inset 0 -3px 0 var(--b1)}
+.cmp-row.head .c2{color:var(--b2-ink);box-shadow:inset 0 -3px 0 var(--b2)}
+.cmp-row.head .c1 .dotc,.cmp-row.head .c2 .dotc{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.cmp-row.head .c1 .dotc{background:var(--b1)}
+.cmp-row.head .c2 .dotc{background:var(--b2)}
+.cmp-k{color:var(--muted);font-size:12.5px}
+.cmp-v{color:var(--ink-soft)}
+.cmp .v1 .yes{color:var(--b1);font-weight:600}
+.cmp .v2 .yes{color:var(--b2);font-weight:600}
+.cmp .no{color:var(--muted);opacity:.8}
+@media(max-width:760px){
+  .cmp-row{grid-template-columns:1fr}
+  .cmp-row.head{display:none}
+  .cmp-row>*{border-right:none}
+  .cmp-k{background:var(--surface-2);color:var(--ink);font-weight:600;padding-bottom:8px}
+  .cmp-v{display:flex;gap:10px;padding-top:8px;padding-bottom:8px}
+  .cmp-v::before{content:attr(data-l);flex:0 0 68px;font-family:var(--mono);font-size:10.5px;padding-top:2px}
+  .cmp-v.v1::before{color:var(--b1)}
+  .cmp-v.v2::before{color:var(--b2)}
+  .cmp-v.v1{border-bottom:1px dashed var(--border)}
+}
+.dec-a.b1{background:var(--b1-soft);color:var(--b1-ink)}
+.dec-a.b2{background:var(--b2-soft);color:var(--b2-ink)}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin:0 0 12px}
+.sec-h h3{font-size:15px;font-weight:600;margin:0}
+.sec-h span{font-size:12px;color:var(--muted)}
+
 </style>
 
 <div class="top">
@@ -132,10 +216,32 @@ footer{border-top:1px solid var(--border);margin-top:34px;padding-top:18px;font-
     <p>ทั้งสองตัวสร้าง prompt ให้ AI ออกข้อสอบ MCQ แบบ one best answer ตามมาตรฐานเดียวกัน ต่างกันที่ตัวหนึ่งเจาะลึกทีละข้อ อีกตัวผลิตเป็นชุดตามผังข้อสอบ อ่านจุดเด่นจุดอ่อนแล้วเลือกให้ตรงกับงานที่กำลังทำ</p>
   </div>
 
+  <div class="sec-h">
+    <h3>ต่างกันตรงไหน</h3><span>กวาดตาบรรทัดเดียวจบ</span>
+  </div>
+  <div class="cmp">
+    <div class="cmp-row head">
+      <span></span>
+      <span class="c1"><i class="dotc"></i>Builder 1 · รายข้อเชิงลึก</span>
+      <span class="c2"><i class="dotc"></i>Builder 2 · ชุดตามผัง</span>
+    </div>
+    <div class="cmp-row"><span class="cmp-k">เหมาะกับ</span><span class="cmp-v v1" data-l="Builder 1">ออกทีละข้อให้ลึกและประณีต</span><span class="cmp-v v2" data-l="Builder 2">ผลิตทั้งชุดให้ครบผังในคราวเดียว</span></div>
+    <div class="cmp-row"><span class="cmp-k">ผังข้อสอบที่อิง</span><span class="cmp-v v1" data-l="Builder 1">NL2 250 ข้อ และหมวด I–IV ของ สพพ. ลงถึงหัวข้อย่อย</span><span class="cmp-v v2" data-l="Builder 2">สาขา ระบบร่างกาย และภารกิจแพทย์ เลือกพร้อมกันได้หลายอัน</span></div>
+    <div class="cmp-row"><span class="cmp-k">ได้กี่ข้อต่อหนึ่งคำสั่ง</span><span class="cmp-v v1" data-l="Builder 1">ทีละหัวข้อ</span><span class="cmp-v v2" data-l="Builder 2"><span class="yes">ทั้งชุด</span> สั่งกระจายข้ามสาขาได้</span></div>
+    <div class="cmp-row"><span class="cmp-k">ค่าความยาก AI และ MPL</span><span class="cmp-v v1" data-l="Builder 1"><span class="yes">คำนวณให้</span></span><span class="cmp-v v2" data-l="Builder 2"><span class="no">ไม่มี</span></span></div>
+    <div class="cmp-row"><span class="cmp-k">เพดานเกณฑ์แพทยสภา</span><span class="cmp-v v1" data-l="Builder 1"><span class="no">ไม่มีแบบบังคับ</span></span><span class="cmp-v v2" data-l="Builder 2"><span class="yes">ระดับ 1–4</span> บังคับระบุกำกับทุกข้อ</span></div>
+    <div class="cmp-row"><span class="cmp-k">ปรับปรุงข้อสอบเดิม</span><span class="cmp-v v1" data-l="Builder 1"><span class="yes">มีโหมดเฉพาะ</span></span><span class="cmp-v v2" data-l="Builder 2"><span class="no">สร้างใหม่อย่างเดียว</span></span></div>
+    <div class="cmp-row"><span class="cmp-k">รูปแบบผลลัพธ์</span><span class="cmp-v v1" data-l="Builder 1">ข้อความสำหรับอ่านและทบทวน</span><span class="cmp-v v2" data-l="Builder 2">ข้อความ หรือ <span class="yes">JSON / CSV / GIFT</span></span></div>
+    <div class="cmp-row"><span class="cmp-k">การปรับคำสั่งตาม AI</span><span class="cmp-v v1" data-l="Builder 1">ระบุชื่อรุ่นและแพ็กเกจลงใน prompt</span><span class="cmp-v v2" data-l="Builder 2"><span class="yes">ปรับรูปคำสั่ง 4 แบบ</span> ตาม AI ที่เลือก</span></div>
+    <div class="cmp-row"><span class="cmp-k">ตัวเลือกต่อข้อ</span><span class="cmp-v v1" data-l="Builder 1">4 หรือ 5 ปรับได้ พร้อมคุมความยาว stem</span><span class="cmp-v v2" data-l="Builder 2">5 ตัวเลือก ล็อกไว้แก้ไม่ได้</span></div>
+    <div class="cmp-row"><span class="cmp-k">เวลาตั้งค่า</span><span class="cmp-v v1" data-l="Builder 1">ราว 25 ช่อง มีโหมด Lite ช่วยลด</span><span class="cmp-v v2" data-l="Builder 2"><span class="yes">ราว 10 ช่อง</span> ตั้งเสร็จในนาทีเดียว</span></div>
+    <div class="cmp-row"><span class="cmp-k">บันทึกค่าไว้ใช้ซ้ำ</span><span class="cmp-v v1" data-l="Builder 1"><span class="no">ตั้งใหม่ทุกครั้ง</span></span><span class="cmp-v v2" data-l="Builder 2"><span class="yes">บันทึกผังเป็นไฟล์</span> ส่งต่อให้กรรมการคนอื่นได้</span></div>
+  </div>
+
   <div class="cards">
 
     <!-- ===== BUILDER 1 ===== -->
-    <article class="card">
+    <article class="card b1">
       <div class="card-top">
         <div class="badge"><span class="num">1</span> Builder 1</div>
         <h3>รายข้อเชิงลึก</h3>
@@ -148,29 +254,39 @@ footer{border-top:1px solid var(--border);margin-top:34px;padding-top:18px;font-
         </div>
       </div>
       <div class="card-body">
-        <ul class="plist">
-          <li class="plist-h pro">จุดเด่น</li>
+        <ul class="hilite">
+          <li><span class="n">1</span><span><b>ผังลึกถึงหัวข้อย่อย</b>เจาะได้ถึง Pathophysiology หรือ Complication ตามหมวด I–IV ของ สพพ.</span></li>
+          <li><span class="n">2</span><span><b>ขัดเงาข้อสอบเดิมได้</b>วางข้อจากคลังลงไป แล้วให้ AI แก้พร้อมบอกว่าแก้อะไรเพราะอะไร</span></li>
+          <li><span class="n">3</span><span><b>ได้ค่าความยากกำกับ</b>สั่งให้ AI ให้คะแนนตัวลวงแล้วคำนวณ Acceptable Index เทียบ MPL</span></li>
+        </ul>
+        <details class="more">
+          <summary><span class="lbl-shut">ดูจุดเด่นและจุดอ่อนทั้งหมด</span><span class="lbl-open">ย่อรายละเอียดกลับ</span><span class="caret">▼</span></summary>
+          <div class="more-b">
+            <ul class="plist">
+              <li class="plist-h pro">จุดเด่น</li>
           <li><span class="tick pro">✓</span>ผูกกับโครงสร้างข้อสอบจริง คือ NL2 250 ข้อ ตามประกาศแพทยสภา 4/2567 และหมวดข้อสอบ I–IV ของ สพพ. ลงลึกได้ถึงหัวข้อย่อยอย่าง Pathophysiology หรือ Complication</li>
           <li><span class="tick pro">✓</span>มีโหมดปรับปรุงข้อสอบเดิม ไม่ใช่แค่สร้างใหม่ เอาข้อในคลังมาวางแล้วให้ AI ขัดเงาได้</li>
           <li><span class="tick pro">✓</span>คุมโครงสร้างข้อได้ละเอียด ทั้ง 4 หรือ 5 ตัวเลือก ป้าย A–E หรือ 1–5 ความยาว stem และความยาวตัวเลือก</li>
           <li><span class="tick pro">✓</span>สั่งให้ AI ให้คะแนนตัวลวงและคำนวณ Acceptable Index เทียบกับ MPL ตามคู่มือออกข้อสอบ</li>
           <li><span class="tick pro">✓</span>ระบุ AI แพ็กเกจ และรุ่นที่ใช้ลงใน prompt พร้อมโหมด Lite สำหรับคนที่ไม่อยากตั้งค่าเยอะ</li>
           <li><span class="tick pro">✓</span>บูรณาการข้ามสาขา preclinical–clinical และสลับภาษา prompt ไทย/อังกฤษได้</li>
-        </ul>
-        <ul class="plist">
-          <li class="plist-h con">จุดอ่อน</li>
+            </ul>
+            <ul class="plist">
+              <li class="plist-h con">จุดอ่อน</li>
           <li><span class="tick con">!</span>ตั้งค่าเยอะ ใช้เวลาต่อหนึ่งครั้ง ไม่เหมาะกับการผลิตข้อสอบจำนวนมากติดกัน</li>
           <li><span class="tick con">!</span>ไม่ได้ออกแบบให้กระจายผังข้ามหลายสาขาและหลายระบบในคำสั่งเดียว</li>
           <li><span class="tick con">!</span>prompt มีรูปแบบเดียว ระบุชื่อรุ่น AI ลงไปเฉย ๆ ไม่ได้ปรับรูปคำสั่งตามลักษณะของ AI แต่ละตัว</li>
           <li><span class="tick con">!</span>ผลลัพธ์เป็นข้อความสำหรับอ่าน ไม่มีรูปแบบ JSON หรือ CSV สำหรับนำเข้าระบบสอบ</li>
           <li><span class="tick con">!</span>ไม่มีเพดานระดับความสามารถตามเกณฑ์แพทยสภาแบบบังคับ และบันทึกค่าที่ตั้งไว้ส่งต่อไม่ได้</li>
-        </ul>
+            </ul>
+          </div>
+        </details>
       </div>
       <div class="card-foot"><a class="go" href="./builder1.html">เปิด Builder 1 →</a></div>
     </article>
 
     <!-- ===== BUILDER 2 ===== -->
-    <article class="card">
+    <article class="card b2">
       <div class="card-top">
         <div class="badge"><span class="num">2</span> Builder 2</div>
         <h3>ชุดตามผัง</h3>
@@ -183,26 +299,37 @@ footer{border-top:1px solid var(--border);margin-top:34px;padding-top:18px;font-
         </div>
       </div>
       <div class="card-body">
-        <ul class="plist">
-          <li class="plist-h pro">จุดเด่น</li>
+        <ul class="hilite">
+          <li><span class="n">1</span><span><b>ปั้นทั้งชุดในคำสั่งเดียว</b>เลือกหลายสาขาหลายระบบพร้อมกัน แล้วสั่งให้ AI กระจายข้อให้สมดุล</span></li>
+          <li><span class="n">2</span><span><b>คุมไม่ให้เกินเกณฑ์แพทยสภา</b>ตั้งเพดานระดับ 1–4 และบังคับให้ AI ระบุระดับกำกับทุกข้อ</span></li>
+          <li><span class="n">3</span><span><b>ส่งเข้าระบบสอบได้ทันที</b>เลือกผลลัพธ์เป็น JSON, ClassMarker CSV หรือ Moodle GIFT</span></li>
+        </ul>
+        <details class="more">
+          <summary><span class="lbl-shut">ดูจุดเด่นและจุดอ่อนทั้งหมด</span><span class="lbl-open">ย่อรายละเอียดกลับ</span><span class="caret">▼</span></summary>
+          <div class="more-b">
+            <ul class="plist">
+              <li class="plist-h pro">จุดเด่น</li>
           <li><span class="tick pro">✓</span>ออกแบบมาเพื่อผลิตเป็นชุด เลือกหลายสาขา หลายระบบ หลายภารกิจแพทย์พร้อมกัน แล้วสั่งให้ AI กระจายข้อให้สมดุล</li>
           <li><span class="tick pro">✓</span>มีเพดานระดับความสามารถตามเกณฑ์แพทยสภา พร้อมข้อความบอกขอบเขตที่อนุญาต และบังคับให้ AI ระบุระดับกำกับทุกข้อ ตรวจย้อนได้ทีละข้อ</li>
           <li><span class="tick pro">✓</span>ปรับรูปคำสั่งตาม AI ที่เลือก Claude ได้ XML tags, ChatGPT ได้ลำดับขั้นการทำงาน, Gemini ได้การย้ำขอบเขตท้ายคำสั่ง, Perplexity ถูกสั่งให้ค้นแนวเวชปฏิบัติแล้วแนบลิงก์อ้างอิง</li>
           <li><span class="tick pro">✓</span>เลือกรูปแบบผลลัพธ์เป็น JSON, CSV สำหรับ ClassMarker หรือ Moodle GIFT นำเข้าระบบสอบได้โดยไม่ต้องแปลงมือ</li>
           <li><span class="tick pro">✓</span>บันทึกผังที่ตั้งไว้เป็นไฟล์ JSON ส่งให้กรรมการคนอื่นโหลดใช้ผังเดียวกัน</li>
           <li><span class="tick pro">✓</span>ฝัง self-check list ให้ AI ตรวจงานตัวเองก่อนส่งผล และล็อกข้อกำหนดหลัก 4 ข้อไว้แก้ไม่ได้ ทุกคนจึงได้มาตรฐานเดียวกัน</li>
-        </ul>
-        <ul class="plist">
-          <li class="plist-h con">จุดอ่อน</li>
+            </ul>
+            <ul class="plist">
+              <li class="plist-h con">จุดอ่อน</li>
           <li><span class="tick con">!</span>ยังไม่ได้ผูกกับโครงสร้าง NL2 250 ข้อ และหมวด I–IV ของ สพพ. ใช้ผังทั่วไปตามสาขาและระบบร่างกายแทน</li>
           <li><span class="tick con">!</span>ไม่มีการให้คะแนนตัวลวงและคำนวณ Acceptable Index หรือ MPL</li>
           <li><span class="tick con">!</span>ไม่มีโหมดปรับปรุงข้อสอบเดิม ทำได้เฉพาะสร้างใหม่</li>
           <li><span class="tick con">!</span>ล็อกไว้ที่ 5 ตัวเลือกเสมอ ปรับเป็น 4 ตัวเลือกไม่ได้ และไม่ได้คุมความยาว stem หรือความยาวตัวเลือก</li>
           <li><span class="tick con">!</span>ไม่ได้ระบุแพ็กเกจและรุ่นของ AI ลงใน prompt</li>
-        </ul>
+            </ul>
+          </div>
+        </details>
       </div>
       <div class="card-foot"><a class="go" href="./builder2.html">เปิด Builder 2 →</a></div>
     </article>
+
   </div>
 
   <!-- ===== decision helper ===== -->
@@ -246,4 +373,6 @@ document.getElementById('theme').onclick = () => {
   document.documentElement.setAttribute('data-theme', next);
 };
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./auth.js"></script>
 </html>
