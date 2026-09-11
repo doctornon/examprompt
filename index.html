@@ -2,7 +2,13 @@
 <html lang="th">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MCQ Prompt Builder — เลือกเครื่องมือ</title>
+<title>MCQ Prompt Builder Platform · สพพ.</title>
+<link rel="icon" href="./favicon.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://pgsuvtaigujlyhagonje.supabase.co" crossorigin>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script defer src="./auth.js"></script>
+
 <meta name="description" content="เครื่องมือประกอบ prompt ออกข้อสอบปรนัย MCQ สำหรับการสอบใบประกอบวิชาชีพเวชกรรม เลือกได้ระหว่างตัวสร้างรายข้อเชิงลึกและตัวสร้างเป็นชุดตามผังข้อสอบ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -196,13 +202,21 @@ details[open] summary .lbl-shut{display:none}
 .sec-h h3{font-size:15px;font-weight:600;margin:0}
 .sec-h span{font-size:12px;color:var(--muted)}
 
+
+/* ===== ตราสัญลักษณ์ และเครดิตผู้พัฒนา (ใช้ร่วมกันทุกหน้า) ===== */
+img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1px;display:block}
+.ep-logo{width:42px;height:42px;flex:0 0 auto}
+.ep-credit{max-width:1320px;margin:0 auto;padding:20px 22px 34px;text-align:center;
+  font-family:var(--font,"IBM Plex Sans Thai",system-ui,sans-serif);
+  font-size:12px;line-height:1.7;color:var(--muted,#6c7d79);border-top:1px solid var(--border,#dae3e0)}
+.ep-credit b{color:var(--ink-soft,#41524f);font-weight:600}
 </style>
 
 <div class="top">
   <div class="top-inner">
-    <div class="mark">ข</div>
+    <img class="mark ep-logo" src="./mhpd-logo.png" alt="ตราสัญลักษณ์ สพพ." width="42" height="42">
     <div class="brand-txt">
-      <h1>MCQ Prompt Builder</h1>
+      <h1>MCQ Prompt Builder Platform</h1>
       <p>เครื่องมือประกอบ prompt ออกข้อสอบปรนัย · MCQ National / ศรว.</p>
     </div>
     <button id="theme">โหมดสี</button>
@@ -373,6 +387,5 @@ document.getElementById('theme').onclick = () => {
   document.documentElement.setAttribute('data-theme', next);
 };
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./auth.js"></script>
+<div class="ep-credit">พัฒนาโดย <b>นายแพทย์ชานนท์ นันทวงค์</b><br>ผู้ช่วยผู้อำนวยการสำนักส่งเสริมสนับสนุนการผลิต พัฒนาแพทย์และบุคลากรทางการแพทย์ (สพพ.)</div>
 </html>

@@ -1,6 +1,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Builder 2 · ชุดตามผัง — MCQ Prompt Builder</title>
+<title>Builder 2 · ชุดตามผัง — MCQ Prompt Builder Platform</title>
+<link rel="icon" href="./favicon.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://pgsuvtaigujlyhagonje.supabase.co" crossorigin>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script defer src="./auth.js" data-gate="1"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -138,6 +144,14 @@ footer code{background:var(--surface-2);padding:1px 5px;border-radius:4px;border
 .xnav-seg a.on{background:var(--accent,#0e7c6b);color:#fff;font-weight:500}
 @media(max-width:560px){.xnav-seg{margin-left:0;width:100%}.xnav-seg a{flex:1;text-align:center}}
 
+
+/* ===== ตราสัญลักษณ์ และเครดิตผู้พัฒนา (ใช้ร่วมกันทุกหน้า) ===== */
+img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1px;display:block}
+.ep-logo{width:42px;height:42px;flex:0 0 auto}
+.ep-credit{max-width:1320px;margin:0 auto;padding:20px 22px 34px;text-align:center;
+  font-family:var(--font,"IBM Plex Sans Thai",system-ui,sans-serif);
+  font-size:12px;line-height:1.7;color:var(--muted,#6c7d79);border-top:1px solid var(--border,#dae3e0)}
+.ep-credit b{color:var(--ink-soft,#41524f);font-weight:600}
 </style>
 
 <div class="xnav">
@@ -152,11 +166,14 @@ footer code{background:var(--surface-2);padding:1px 5px;border-radius:4px;border
 
 <header>
   <div class="hwrap">
-    <div>
-      <p class="eyebrow">ศรว. · Item Writing Support</p>
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <img class="ep-logo" src="./mhpd-logo.png" alt="ตราสัญลักษณ์ สพพ." width="46" height="46" style="width:46px;height:46px;margin-top:3px">
+      <div>
+      <p class="eyebrow">MCQ Prompt Builder Platform · สพพ.</p>
       <h1>NLE Item Prompt Builder
         <span class="sub">เลือกผังข้อสอบ → ได้คำสั่ง (prompt) พร้อมวางลง Claude / Gemini / ChatGPT / Perplexity</span>
       </h1>
+      </div>
     </div>
     <div class="locked">
       <div class="locked-h"><span>ข้อกำหนดตายตัว · ฝังในทุก prompt · แก้ไม่ได้</span></div>
@@ -655,6 +672,4 @@ $('btnReset').onclick = ()=>{ if(confirm('ล้างค่าทั้งห�
 
 update();
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./auth.js" data-gate="1"></script>
+<div class="ep-credit">พัฒนาโดย <b>นายแพทย์ชานนท์ นันทวงค์</b><br>ผู้ช่วยผู้อำนวยการสำนักส่งเสริมสนับสนุนการผลิต พัฒนาแพทย์และบุคลากรทางการแพทย์ (สพพ.)</div>

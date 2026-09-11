@@ -1,5 +1,6 @@
 /* =============================================================
-   examprompt · Google sign-in (Supabase Auth)
+   MCQ Prompt Builder Platform · Google sign-in (Supabase Auth)
+   พัฒนาโดย นายแพทย์ชานนท์ นันทวงค์ — สพพ.
    ใช้ร่วมกันทั้ง index / builder1 / builder2
 
    วิธีใช้ในหน้า HTML — วางก่อนปิด </body> หรือท้ายไฟล์
@@ -92,10 +93,12 @@
         '<p class="ep-err" id="ep-err"></p>' +
         '<p class="ep-note">ระบบขอเพียงชื่อ อีเมล และรูปโปรไฟล์ เพื่อใช้บันทึกผังข้อสอบของท่าน ' +
            'ไม่มีการเข้าถึงอีเมลหรือไฟล์ใด ๆ ใน Google ของท่าน</p>' +
+        '<a class="ep-back" href="#" id="ep-switch">ใช้บัญชี Google อื่น</a><br>' +
         '<a class="ep-back" href="./">← กลับไปหน้าเลือกเครื่องมือ</a>' +
       '</div>';
     document.body.appendChild(g);
-    g.querySelector('#ep-signin').addEventListener('click', signIn);
+    g.querySelector('#ep-signin').addEventListener('click', function () { signIn(false); });
+    g.querySelector('#ep-switch').addEventListener('click', function (e) { e.preventDefault(); signIn(true); });
     return g;
   }
 
@@ -114,13 +117,13 @@
     });
   }
 
-  function signIn() {
+  function signIn(pickAccount) {
     var err = document.getElementById('ep-err');
     sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: location.origin + location.pathname,
-        queryParams: { prompt: 'select_account' }
+        queryParams: (pickAccount === true ? { prompt: 'select_account' } : {})
       }
     }).then(function (r) {
       if (r.error && err) { err.style.display = 'block'; err.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + r.error.message; }
@@ -149,7 +152,7 @@
     if (!el) return;
     if (!user) {
       el.innerHTML = '<button class="ep-mini" id="ep-in2">ลงชื่อเข้าใช้</button>';
-      el.querySelector('#ep-in2').addEventListener('click', signIn);
+      el.querySelector('#ep-in2').addEventListener('click', function () { signIn(false); });
       return;
     }
     var m = user.user_metadata || {};
@@ -181,7 +184,6 @@
       document.documentElement.classList.toggle('ep-locked', !ok);
       if (!ok && IN_APP) { gate.hidden = false; document.documentElement.classList.add('ep-locked'); }
     }
-    if (user) touch(user);
   }
 
   var touched = false;
@@ -204,7 +206,10 @@
       history.replaceState({}, '', location.pathname);
     }
   });
-  sb.auth.onAuthStateChange(function (_e, session) { apply(session); });
+  sb.auth.onAuthStateChange(function (evt, session) {
+    apply(session);
+    if (evt === 'SIGNED_IN' && session && session.user) touch(session.user);
+  });
 
   // เปิดให้หน้าอื่นเรียกใช้ได้ เช่น ปุ่มบันทึกผังลงฐานข้อมูล
   window.EPAuth = {
