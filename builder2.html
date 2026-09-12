@@ -1,3 +1,6 @@
+<!doctype html>
+<html lang="th">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Builder 2 · ชุดตามผัง — MCQ Prompt Builder Platform</title>
@@ -8,6 +11,8 @@
 <script src="./capabilities.js"></script>
 <script defer src="./auth.js" data-gate="1"></script>
 <script defer src="./profile.js"></script>
+<script defer src="./ai-session.js"></script>
+<script defer src="./compare.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -174,6 +179,9 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
 .roundwarn{border-left:3px solid var(--bubble);background:#EEF2F8;padding:8px 11px;font-size:12px;
   color:var(--ink);margin-top:10px;line-height:1.5}
 </style>
+<link rel="stylesheet" href="./builder-ux.css">
+</head>
+<body>
 
 <div class="xnav">
   <div class="xnav-in">
@@ -212,7 +220,12 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
 
 <main>
 <!-- ============ FORM ============ -->
-<div class="col-form">
+<div class="col-form" id="builder-form" tabindex="-1">
+  <section class="workflow-tools" aria-label="จัดการผังข้อสอบ">
+    <div><h2>เตรียมผังข้อสอบ</h2><p>ตั้งค่าขอบเขต ตรวจ prompt แล้วคัดลอกไปใช้กับ AI</p></div>
+    <div class="workflow-links"><button type="button" onclick="document.getElementById('btnSave').click()">บันทึกผัง .json</button><button type="button" onclick="document.getElementById('btnLoad').click()">โหลดผังเดิม</button><a href="#prompt-panel">ไปที่ prompt</a><a href="#ai-comparison">เปรียบเทียบ AI</a></div>
+    <p>บันทึกผังเป็นไฟล์เพื่อใช้ครั้งถัดไปหรือส่งต่อให้คณะกรรมการ</p>
+  </section>
 
   <section class="blk">
     <div class="blk-h"><span class="blk-n">1</span><h2>ขอบเขตการสอบ</h2><span class="hint">scope</span></div>
@@ -227,7 +240,8 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
       </div>
       <div>
         <label class="fld" for="n">จำนวนข้อ</label>
-        <input type="number" id="n" value="5" min="1" max="50">
+        <input type="number" id="n" value="5" min="1" max="50" step="1" inputmode="numeric" aria-describedby="count-help">
+        <small id="count-help">1–50 ข้อ</small>
       </div>
       <div>
         <label class="fld" for="lang">ภาษาโจทย์</label>
@@ -318,22 +332,23 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
 </div>
 
 <!-- ============ OUTPUT ============ -->
-<div class="col-out">
+<div class="col-out" id="prompt-panel" tabindex="-1">
+  <h2 class="output-heading">ตรวจและนำ prompt ไปใช้</h2>
   <div class="modelpick">
     <div class="mp-row">
       <div><label class="fld" for="mp-ai">ยี่ห้อ AI</label><select id="mp-ai"></select></div>
       <div><label class="fld" for="mp-plan">แพ็กเกจ</label><select id="mp-plan"></select></div>
       <div><label class="fld" for="mp-model">รุ่นที่ใช้</label><select id="mp-model"></select></div>
     </div>
-    <details class="capbox" id="capbox" open>
+    <details class="capbox" id="capbox">
       <summary>ปรับคำสั่งตามความสามารถของรุ่นนี้ <span class="caret2">&#9660;</span></summary>
       <table class="captbl"><tbody id="captbody"></tbody></table>
       <p class="capnote">ชั้นเนื้อหา (ผังข้อสอบ ข้อกำหนด 4 ข้อ กฎการเขียน เพดานแพทยสภา) เหมือนกันทุกรุ่นเสมอ
-        ที่ปรับคือชั้นห่อเท่านั้น ข้อสอบที่ได้จึงยังเทียบเท่ากันและรวมคลังเดียวกันได้</p>
+        ที่ปรับคือวิธีสั่งงาน คุณภาพข้อสอบยังต้องประเมินด้วยเกณฑ์เดียวกันก่อนนำไปใช้</p>
     </details>
   </div>
 
-  <pre class="out" id="out"></pre>
+  <pre class="out" id="out" tabindex="0" aria-label="คำสั่งสำหรับนำไปใช้กับ AI"></pre>
   <div class="meter">
     <span><b id="mChars">0</b> ตัวอักษร</span>
     <span>~<b id="mTok">0</b> tokens</span>
@@ -354,13 +369,36 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
   </div>
 </div>
 </main>
+<section id="ai-comparison" class="comparison" aria-labelledby="comparison-heading">
+  <h2 id="comparison-heading">ลองผังเดียวกันกับ AI สองรุ่น</h2>
+  <p>เปรียบเทียบวิธีสั่งงานก่อนนำ prompt ไปทดลอง โดยใช้เนื้อหา เกณฑ์ข้อสอบ และการตั้งค่าแชทชุดเดียวกัน</p>
+  <p id="compare-source"></p>
+  <div class="compare-selectors">
+    <label for="compare-provider">AI ฝั่ง B<select id="compare-provider"></select></label>
+    <label for="compare-plan">แพ็กเกจฝั่ง B<select id="compare-plan"></select></label>
+    <label for="compare-model">รุ่นฝั่ง B<select id="compare-model"></select></label>
+  </div>
+  <p class="comparison-note">ใช้แหล่งอ้างอิง โหมดการคิด และเพดานจำนวนข้อต่อรอบจากฟอร์มด้านบนร่วมกัน ถ้าโหมดการคิดเป็น “ค่าตั้งต้นของรุ่น” วิธีสั่งงานอาจต่างกันตามรุ่น ข้อความที่ต่างกันไม่ได้แปลว่าฝั่งใดให้ข้อสอบดีกว่า</p>
+  <button type="button" id="compare-build">สร้างชุดเปรียบเทียบ</button>
+  <p id="compare-status" role="status" aria-live="polite">เลือก AI ฝั่ง B แล้วสร้างชุดเปรียบเทียบ</p>
+  <div id="compare-results" hidden>
+    <div class="compare-table-wrap"><table><caption>ส่วนที่ปรับตามรุ่น</caption><thead><tr><th scope="col">หัวข้อ</th><th scope="col">ฝั่ง A</th><th scope="col">ฝั่ง B</th></tr></thead><tbody id="compare-differences"></tbody></table></div>
+    <div class="compare-prompts">
+      <div><h3 id="compare-name-a">ฝั่ง A</h3><label for="compare-text-a">Prompt ฝั่ง A</label><textarea id="compare-text-a" rows="8" readonly></textarea><button type="button" id="compare-copy-a">คัดลอกฝั่ง A</button></div>
+      <div><h3 id="compare-name-b">ฝั่ง B</h3><label for="compare-text-b">Prompt ฝั่ง B</label><textarea id="compare-text-b" rows="8" readonly></textarea><button type="button" id="compare-copy-b">คัดลอกฝั่ง B</button></div>
+    </div>
+    <button type="button" id="compare-download">ดาวน์โหลดชุดทดลอง .json</button>
+    <p>ไฟล์เก็บผัง คำสั่งทั้งสองฝั่ง การตั้งค่า เวอร์ชัน และรายการทบทวนให้อาจารย์ใช้เกณฑ์เดียวกัน ยังไม่มีผลประเมินจนกว่าจะนำคำสั่งไปทดลองและตรวจข้อสอบจริง</p>
+  </div>
+</section>
 
 <footer>
-  แก้ไขรายการตัวเลือกทั้งหมดได้ที่ตัวแปร <code>BLUEPRINT</code> ในไฟล์นี้ · แก้ข้อความคำสั่งหลักได้ที่ <code>CORE</code> และ <code>RULES</code> · ไฟล์เดียวจบ ไม่ต้องติดตั้งอะไร เปิดจากเครื่องหรืออัปขึ้น hosting ก็ได้
+  บันทึกผัง .json เพื่อเก็บตัวเลือกไว้ใช้ซ้ำ · ดาวน์โหลด .txt เพื่อเก็บคำสั่งฉบับพร้อมใช้
 </footer>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
+<nav class="mobile-jump" aria-label="ทางลัดเครื่องมือ"><a href="#builder-form">ตั้งค่าข้อสอบ</a><a href="#prompt-panel">ดู prompt</a></nav>
 <script>
 /* =====================================================================
    LAYER 1 — BLUEPRINT DATA
@@ -591,10 +629,10 @@ function buildBlueprint(){
 function currentProfile(){
   return EPCap.profile($('mp-ai').value, $('mp-plan').value, $('mp-model').value);
 }
-function buildPrompt(){
+function promptSpec(){
   const fmtKey = $('fmt').value;
   const cap = picked('cap')[0];
-  const out = EPCap.compose({
+  return {
     core: CORE, rules: RULES, blueprint: buildBlueprint(),
     fmt: FORMATS[fmtKey], check: checklist(),
     hardRules: HARD_RULES,
@@ -602,7 +640,10 @@ function buildPrompt(){
     nWanted: $('n').value,
     machineFormat: ['json','classmarker','gift'].indexOf(fmtKey) > -1,
     task: 'ร่างข้อสอบตาม blueprint ข้างต้นให้ครบจำนวน ตรวจด้วย self_check ทุกข้อ แก้ข้อที่ไม่ผ่าน แล้วแสดงเฉพาะผลลัพธ์สุดท้ายตาม output_format'
-  }, currentProfile());
+  };
+}
+function buildPrompt(){
+  const out = EPCap.compose(promptSpec(), currentProfile());
   lastPlan = out.plan; lastProfile = out.profile;
   return out.text;
 }
@@ -631,12 +672,19 @@ function fillModels(keep){
 
 function renderCaps(){
   const prof = currentProfile();
-  const plan = EPCap.rounds($('n').value, prof);
+  const plan = lastPlan;
   $('captbody').innerHTML = EPCap.describe(prof, plan)
     .map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
 }
 
 function update(){
+  const input = $('n');
+  const valid = input.validity.valid && Number.isInteger(Number(input.value)) && Number(input.value) >= 1;
+  input.setAttribute('aria-invalid', String(!valid));
+  $('count-help').textContent = valid ? '1–50 ข้อ' : 'กรอกจำนวนเต็มตั้งแต่ 1 ถึง 50 ข้อ';
+  ['btnCopy','btnOpen','btnTxt','btnSave'].forEach(id=>{ $(id).disabled = !valid; });
+  document.querySelectorAll('.workflow-links button')[0].disabled = !valid;
+  if(!valid) return null;
   const p = buildPrompt();
   $('out').textContent = p;
   $('mChars').textContent = p.length.toLocaleString();
@@ -663,7 +711,9 @@ async function copyText(txt){
   catch{
     const ta=document.createElement('textarea'); ta.value=txt;
     ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
-    ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok;
+    try { ta.select(); return document.execCommand('copy'); }
+    catch { return false; }
+    finally { ta.remove(); }
   }
 }
 
@@ -687,19 +737,20 @@ function epLogUse(action){
 }
 $('btnCopy').onclick = async ()=>{
   var ok = await copyText(update());
-  epLogUse('copy');
+  if(ok) epLogUse('copy');
   toast(ok ? 'คัดลอกแล้ว วางในแชท AI ได้เลย' : 'คัดลอกไม่สำเร็จ ให้เลือกข้อความในกล่องแล้วกด Ctrl+C');
 };
 $('btnOpen').onclick = async ()=>{
   const p = update();
-  await copyText(p);
-  epLogUse('open');
+  if(p === null) return;
+  // Open synchronously within the click so browsers do not block after clipboard awaits.
   const mk = OPEN_URL[$('mp-ai').value];
   const url = mk ? mk(p) : 'https://claude.ai/new';
-  // ลิงก์แบบส่ง prompt ทาง URL มีเพดานความยาว ถ้ายาวเกินให้เปิดหน้าเปล่าแล้วให้ผู้ใช้วางเอง
   const safe = url.length > 7000 ? url.split('?')[0] : url;
   window.open(safe,'_blank','noopener');
-  toast('คัดลอก prompt แล้ว ถ้าช่องแชทว่างให้กดวาง');
+  const ok = await copyText(p);
+  epLogUse('open');
+  toast(ok ? 'คัดลอกแล้ว หากแชทว่างให้กดวาง หากแอปไม่เปิดให้อนุญาตป๊อปอัป' : 'คัดลอกไม่สำเร็จ กลับมาใช้ปุ่มคัดลอกหรือดาวน์โหลด .txt');
 };
 function dl(name, txt, type){
   const b=new Blob([txt],{type:type||'text/plain;charset=utf-8'});
@@ -713,7 +764,7 @@ $('btnTxt').onclick = ()=>{ dl(`nle-prompt-${$('mp-ai').value}.txt`, update()); 
 function snapshot(){
   const o={ _v:2, ai:$('mp-ai').value, plan:$('mp-plan').value, model:$('mp-model').value,
     step:$('step').value, n:$('n').value, lang:$('lang').value,
-    fmt:$('fmt').value, topic:$('topic').value, avoid:$('avoid').value, sel:{} };
+    fmt:$('fmt').value, topic:$('topic').value, avoid:$('avoid').value, session:EPCap.getSession(), sel:{} };
   Object.keys(BLUEPRINT).forEach(k=>{
     o.sel[k]=[...document.querySelectorAll(`input[name="${k}"]:checked`)].map(i=>+i.value);
   });
@@ -723,32 +774,55 @@ $('btnSave').onclick = ()=>{
   dl('nle-blueprint-preset.json', JSON.stringify(snapshot(),null,2), 'application/json');
   toast('บันทึกผังเป็นไฟล์แล้ว');
 };
+// Validate the complete file before mutating any current controls.
+function validatePreset(o){
+  const fail = ()=>{ throw new Error('ไฟล์ผังไม่ถูกต้องหรือเป็นเวอร์ชันที่ไม่รองรับ'); };
+  if(!o || typeof o !== 'object' || Array.isArray(o) || o._v !== 2 || !o.sel || typeof o.sel !== 'object') fail();
+  for(const k of ['step','lang','fmt']){
+    if(![...$(k).options].some(option=>option.value === o[k])) fail();
+  }
+  if(!['number','string'].includes(typeof o.n) || !Number.isInteger(Number(o.n)) || Number(o.n)<1 || Number(o.n)>50) fail();
+  for(const k of ['topic','avoid']) if(typeof o[k] !== 'string' || o[k].length>100000) fail();
+  for(const [k,cfg] of Object.entries(BLUEPRINT)){
+    const values=o.sel[k];
+    if(!Array.isArray(values) || new Set(values).size!==values.length || values.some(i=>!Number.isInteger(i) || i<0 || i>=cfg.items.length)) fail();
+    if(cfg.type !== 'multi' && values.length !== 1) fail();
+  }
+  const provider=Object.prototype.hasOwnProperty.call(EPCap.PROVIDERS,o.ai) && EPCap.PROVIDERS[o.ai];
+  if(!provider || !provider.plans.includes(o.plan) || !provider.models[o.plan].includes(o.model)) fail();
+  if(o.session !== undefined) EPCap.validateSession(o.session);
+  return o;
+}
+function applyPreset(o){
+  validatePreset(o);
+  EPCap.setSession(o.session || {evidence:'unconfirmed',reasoning:'auto',batch:0});
+  for(const k of ['step','n','lang','fmt','topic','avoid']) $(k).value=o[k];
+  Object.keys(BLUEPRINT).forEach(k=>{
+    document.querySelectorAll(`input[name="${k}"]`).forEach(i=>{i.checked=o.sel[k].includes(+i.value);});
+  });
+  $('mp-ai').value=o.ai; fillPlans(false);
+  $('mp-plan').value=o.plan; fillModels(false);
+  $('mp-model').value=o.model;
+  update();
+  window.dispatchEvent(new Event('ep-session-loaded'));
+}
 $('btnLoad').onclick = ()=> $('fileIn').click();
-$('fileIn').onchange = e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const o=JSON.parse(r.result);
-      $('step').value=o.step; $('n').value=o.n; $('lang').value=o.lang;
-      $('fmt').value=o.fmt; $('topic').value=o.topic||''; $('avoid').value=o.avoid||'';
-      Object.keys(BLUEPRINT).forEach(k=>{
-        document.querySelectorAll(`input[name="${k}"]`).forEach(i=>{
-          i.checked = (o.sel[k]||[]).includes(+i.value);
-        });
-      });
-      if(o.ai && EPCap.PROVIDERS[o.ai]){ $('mp-ai').value=o.ai; fillPlans(true);
-        if(o.plan){ $('mp-plan').value=o.plan; fillModels(true); }
-        if(o.model){ $('mp-model').value=o.model; } }
-      update(); toast('โหลดผังเรียบร้อย');
-    }catch{ toast('ไฟล์ผังไม่ถูกต้อง'); }
-  };
-  r.readAsText(f); e.target.value='';
+$('fileIn').onchange = async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  if(f.size > 1024*1024){ toast('ไฟล์ใหญ่เกิน 1 MB กรุณาเลือกไฟล์ผัง .json'); return; }
+  try{
+    const o=validatePreset(JSON.parse(await f.text()));
+    applyPreset(o); toast('โหลดผังเรียบร้อย ตรวจค่าก่อนนำ prompt ไปใช้');
+  }catch{ toast('โหลดไม่ได้: ไฟล์ผังไม่ถูกต้องหรือไม่รองรับ ค่าปัจจุบันยังอยู่ครบ'); }
 };
 $('btnReset').onclick = ()=>{ if(confirm('ล้างค่าทั้งหมดกลับเป็นค่าเริ่มต้น')) location.reload(); };
 
 fillSel($('mp-ai'), Object.keys(EPCap.PROVIDERS), false);
 fillPlans(false);
 update();
+window.EPBuilder = { spec: promptSpec, preset: snapshot, refresh: update, context: ()=>({profile:lastProfile, plan:lastPlan, valid:!$('btnCopy').disabled}) };
 </script>
 <div class="ep-credit">พัฒนาโดย <b>นายแพทย์ชานนท์ นันทวงค์</b><br>ผู้ช่วยผู้อำนวยการสำนักส่งเสริมสนับสนุนการผลิต พัฒนาแพทย์และบุคลากรทางการแพทย์ (สพพ.)</div>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+/* Shared refinements preserve the builders' existing green visual system. */
+:where(input, select, textarea, button, a, summary):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+:where(input, textarea) { caret-color: var(--accent); }
+::selection { background: var(--accent-soft); color: var(--ink); }
+:where(#builder-form, #prompt-panel) { scroll-margin-top: 24px; }
+:where(.wrap > *, .mp-row > *, .row > *) { min-width: 0; }
+:where(.pv-foot, .actions) { flex-wrap: wrap; }
+:where(.pv-meta, .cnt, .meter) { font-variant-numeric: tabular-nums; }
+:where(.out, #preview) { overflow-wrap: anywhere; }
+.workflow-tools { margin-bottom: 24px; }
+.workflow-tools h2, .output-heading { font-size: 20px; margin: 0 0 8px; color: var(--ink); }
+.workflow-tools p { margin: 8px 0; color: var(--ink-soft); }
+.workflow-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.workflow-links a { color: var(--accent-ink); text-underline-offset: 4px; padding: 10px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#n[aria-invalid="true"] { border: 2px solid var(--crit); }
+#count-help { display: block; margin-top: 6px; color: var(--ink-soft); }
+#n[aria-invalid="true"] + #count-help { color: var(--crit); }
+.opt:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+.mobile-jump { display: none; }
+.toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+@media (max-width: 1020px) {
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .mobile-jump { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    display: flex; gap: 8px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--surface); border-top: 1px solid var(--border); }
+  .mobile-jump a { flex: 1; text-align: center; padding: 10px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent-ink); text-decoration: none; font-weight: 600; }
+  .toast { bottom: calc(86px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+  button, .opt { min-height: 44px; }
+  .opt { align-items: center; font-size: 14px; padding: 10px; }
+  .mp-row { grid-template-columns: 1fr !important; }
+  .row { flex-wrap: wrap; }
+  .row > * { flex: 1 1 100%; }
+  .xnav { flex-wrap: wrap; }
+  .xnav a { overflow-wrap: anywhere; }
+  .pv-foot .btn, .actions button { flex: 1 1 45%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
+@media (max-width: 640px) {
+  .xnav-seg { flex-wrap: wrap; border-radius: 8px; }
+  .xnav-seg a { white-space: normal; min-height: 44px; display: grid; place-items: center; }
+  .row { display: flex; }
+}
+/* Explicit layout must never override authorization-driven hidden elements. */
+[hidden] { display: none !important; }
+@media (max-width: 640px) {
+  .xnav-seg a { flex: 1 1 30%; padding-inline: 8px; overflow-wrap: normal; }
+}
+.ai-session { padding: 18px; margin-bottom: 16px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); color: var(--ink); }
+.ai-session h2 { margin: 0 0 8px; font-size: 18px; line-height: 1.5; }
+.ai-session p { margin: 8px 0 14px; line-height: 1.7; }
+.session-grid { display: grid; gap: 14px; }
+.session-grid label, .session-followups label { display: block; font-size: 14px; color: var(--ink-soft); }
+.session-grid select { display: block; width: 100%; margin-top: 6px; }
+.ai-session .session-summary { margin-top: 16px; font-weight: 600; color: var(--accent-ink); }
+.ai-session .session-note { font-size: 14px; color: var(--ink-soft); }
+.session-followups { padding-top: 12px; border-top: 1px solid var(--border); }
+.session-followups summary { cursor: pointer; color: var(--accent-ink); font-weight: 600; }
+.session-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.ai-session button { font: inherit; padding: 10px 14px; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--accent-ink); background: var(--accent-soft); cursor: pointer; }
+.ai-session button:disabled { cursor: not-allowed; }
+.ai-session textarea { width: 100%; margin: 8px 0; font: inherit; resize: vertical; }
+.modelpick .ai-session { padding: 16px 0 0; border: 0; border-radius: 0; background: transparent; }
+@media (min-width: 641px) {
+  .session-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .session-grid label:first-child { grid-column: 1 / -1; }
+}
+.comparison { max-width: 1280px; margin: 32px auto; padding: 24px; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; scroll-margin-top: 24px; }
+.comparison h2 { font-size: 22px; margin: 0 0 12px; }
+.comparison p { max-width: 78ch; line-height: 1.7; color: var(--ink-soft); }
+.compare-selectors { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 20px 0; }
+.compare-selectors label { display: block; font-size: 14px; }
+.compare-selectors select { display: block; margin-top: 6px; width: 100%; }
+.comparison button { font: inherit; padding: 10px 16px; color: var(--accent-ink); background: var(--accent-soft); border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; }
+.comparison button:disabled { cursor: not-allowed; }
+.compare-table-wrap { overflow-x: auto; margin: 24px 0; }
+.comparison table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.comparison caption { text-align: left; font-weight: 600; margin-bottom: 8px; }
+.comparison th, .comparison td { text-align: left; vertical-align: top; padding: 12px; border-bottom: 1px solid var(--border); }
+.compare-changed { background: var(--accent-soft); }
+.compare-prompts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; margin-bottom: 24px; }
+.compare-prompts h3 { font-size: 17px; overflow-wrap: anywhere; }
+.compare-prompts textarea { display: block; width: 100%; margin: 8px 0 12px; font: inherit; resize: vertical; }
+@media(max-width: 640px) {
+  .comparison { margin: 24px 12px; padding: 16px; }
+  .compare-selectors,.compare-prompts { grid-template-columns: 1fr; }
+  .comparison th,.comparison td { padding: 8px; overflow-wrap: anywhere; }
+}

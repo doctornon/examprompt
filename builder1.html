@@ -12,6 +12,7 @@
 <script src="./capabilities.js"></script>
 <script defer src="./auth.js" data-gate="1"></script>
 <script defer src="./profile.js"></script>
+<script defer src="./ai-session.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,6 +172,7 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
 .ep-credit b{color:var(--ink-soft,#41524f);font-weight:600}
 </style>
 <style>img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="stylesheet" href="./builder-ux.css">
 </head>
 <body>
 
@@ -208,7 +210,7 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
   </div>
 </div>
 
-<div class="wrap">
+<div class="wrap" id="builder-form" tabindex="-1">
   <div class="form">
 
     <section class="card">
@@ -472,13 +474,13 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
   </div>
 
   <div>
-    <div class="previewwrap">
+    <div class="previewwrap" id="prompt-panel" tabindex="-1">
       <div class="pv-h">
         <div class="pv-dots"><span></span><span></span><span></span></div>
         <span class="pv-title">prompt.txt</span>
         <span class="pv-meta" id="pvmeta">ไทย · 1 ข้อ</span>
       </div>
-      <div class="pv-body"><pre id="preview"></pre></div>
+      <div class="pv-body"><pre id="preview" tabindex="0" aria-label="คำสั่งสำหรับนำไปใช้กับ AI"></pre></div>
       <div class="pv-foot">
         <button class="btn primary" id="copy">คัดลอก prompt</button>
         <button class="btn line" id="openai">เปิด AI</button>
@@ -497,8 +499,9 @@ img.mark,.ep-logo{background:#fff;object-fit:contain;border-radius:9px;padding:1
   <b>ที่มา:</b> โครงสร้าง blueprint I–IV และรูปแบบเฉลยอ้างอิงจากแบบออกข้อสอบประมวลความรู้ขั้นที่ 2 (สพพ.) · เกณฑ์ One-best-answer, การหลีกเลี่ยง negative form, หน่วย metric, และการคำนวณ Acceptable Index / MPL อ้างอิงจากคู่มือแนะนำการออกข้อสอบปรนัย · หมวดข้อสอบ 250 ข้อ ตามประกาศแพทยสภา 4/2567 (ศรว.) &nbsp;— &nbsp;prompt ที่สร้างเป็นเพียงคำสั่งตั้งต้น อาจารย์ควรตรวจทานความถูกต้องทางคลินิกและความตรงตาม blueprint ของข้อสอบที่ AI สร้างทุกครั้ง
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
+<nav class="mobile-jump" aria-label="ทางลัดเครื่องมือ"><a href="#builder-form">ตั้งค่าข้อสอบ</a><a href="#prompt-panel">ดู prompt</a></nav>
 <script>
 "use strict";
 const $=(s)=>document.querySelector(s), $$=(s)=>document.querySelectorAll(s);
@@ -772,13 +775,8 @@ function capWrap(){
     nWanted: S.count,
     machineFormat: false
   }, prof);
-  /* ดึงเฉพาะส่วน how_to_work และ final_reminder มาต่อท้าย prompt เดิมของ Builder 1 */
-  const m = out.text.match(/<how_to_work>\n([\s\S]*?)\n<\/how_to_work>/)
-         || out.text.match(/# วิธีทำงาน\n([\s\S]*?)(?:\n# ย้ำอีกครั้ง|$)/);
-  const tail = out.text.match(/<final_reminder>\n([\s\S]*?)\n<\/final_reminder>/)
-            || out.text.match(/# ย้ำอีกครั้ง\n([\s\S]*)$/);
-  let t = '\n# วิธีทำงานกับรุ่นที่เลือก\n' + (m ? m[1].trim() : '');
-  if (tail) t += '\n\n# ย้ำก่อนตอบ\n' + tail[1].trim();
+  let t = '\n# วิธีทำงานกับรุ่นที่เลือก\n' + out.instructions;
+  if (out.reminder) t += '\n\n# ย้ำก่อนตอบ\n' + out.reminder;
   lastCapPlan = out.plan; lastCapProfile = prof;
   return t;
 }
@@ -912,13 +910,12 @@ function epLogUse(action){
  });
 }
 $("#copy").onclick=async()=>{
- epLogUse("copy");
- try{await navigator.clipboard.writeText(lastText);showToast("คัดลอก prompt แล้ว — วางใน "+S.ai+" ได้เลย");}
- catch(e){const ta=document.createElement("textarea");ta.value=lastText;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");showToast("คัดลอก prompt แล้ว");}catch(_){showToast("คัดลอกไม่สำเร็จ — เลือกข้อความในกล่องแล้วคัดลอกเอง");}document.body.removeChild(ta);}
+ try{await navigator.clipboard.writeText(lastText);epLogUse("copy");showToast("คัดลอก prompt แล้ว — วางใน "+S.ai+" ได้เลย");}
+ catch(e){const ta=document.createElement("textarea");ta.value=lastText;document.body.appendChild(ta);ta.select();try{if(!document.execCommand("copy")) throw new Error("copy failed");epLogUse("copy");showToast("คัดลอก prompt แล้ว");}catch(_){showToast("คัดลอกไม่สำเร็จ — เลือกข้อความในกล่องแล้วคัดลอกเอง");}document.body.removeChild(ta);}
 };
 $("#openai").onclick=()=>{
  epLogUse("open");
- const urls={Claude:"https://claude.ai/new",ChatGPT:"https://chatgpt.com",Gemini:"https://gemini.google.com/app",Copilot:"https://copilot.microsoft.com",DeepSeek:"https://chat.deepseek.com"};
+ const urls={Claude:"https://claude.ai/new",ChatGPT:"https://chatgpt.com",Gemini:"https://gemini.google.com/app",Copilot:"https://copilot.microsoft.com",DeepSeek:"https://chat.deepseek.com",Perplexity:"https://www.perplexity.ai"};
  window.open(urls[S.ai]||"https://claude.ai/new","_blank","noopener");
 };
 let tt;function showToast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2600);}
@@ -926,6 +923,7 @@ let tt;function showToast(m){const t=$("#toast");t.textContent=m;t.classList.add
 $("#topic").value=S.topic="Community-acquired pneumonia";
 $("#subject").value=S.subject="กลไกการเกิด hypoxemia ใน lobar pneumonia";
 render();
+window.EPBuilder = { refresh: render, context: ()=>({profile:lastCapProfile, plan:lastCapPlan, valid:true}) };
 </script>
 
 </body>
